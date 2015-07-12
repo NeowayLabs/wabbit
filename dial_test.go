@@ -3,7 +3,6 @@ package amqputil
 import (
 	"fmt"
 	"os"
-	"reflect"
 	"testing"
 
 	"github.com/fsouza/go-dockerclient"
@@ -13,16 +12,35 @@ var (
 	dockerClient *docker.Client
 )
 
-func TestMain(t *testing.T) {
+func TestMain(m *testing.M) {
 	var err error
 
+	fmt.Printf("Starting backends")
 	endpoint := "unix:///var/run/docker.sock"
 	dockerClient, err = docker.NewClient(endpoint)
 
 	if err != nil {
-		t.Error(err)
-		return
+		fmt.Printf("Error connecting to docker daemon...")
+		os.Exit(1)
 	}
+
+	rmRabbit()
+	runRabbit()
+
+	status := m.Run()
+
+	rmRabbit()
+
+	os.Exit(status)
+}
+func rmRabbit() {
+	rmCtnOpt := docker.RemoveContainerOptions{
+		ID:            "rabbitmq-tests",
+		RemoveVolumes: true,
+		Force:         true,
+	}
+
+	_ = dockerClient.RemoveContainer(rmCtnOpt)
 }
 
 func pullRabbit() error {
@@ -41,17 +59,8 @@ func pullRabbit() error {
 	return nil
 }
 
-func runRabbitMQ() (*docker.Container, error) {
+func runRabbit() (*docker.Container, error) {
 	var pulled bool
-
-	rmCtnOpt := docker.RemoveContainerOptions{
-		ID: "rabbitmq-tests",
-		RemoveVolumes: true,
-		Force: true,
-	}
-
-	_ = dockerClient.RemoveContainer(rmCtnOpt)
-
 try:
 	opts := docker.CreateContainerOptions{
 		Name: "rabbitmq-tests",
@@ -91,11 +100,8 @@ try:
 }
 
 func TestDial(t *testing.T) {
-	rabbitCtn, err := runRabbitMQ()
-
 	if err != nil {
 		t.Error(err)
-		fmt.Println("%+v\n", reflect.TypeOf(err))
 	}
 
 	fmt.Println(rabbitCtn)
