@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/fsouza/go-dockerclient"
 )
@@ -15,7 +16,7 @@ var (
 func TestMain(m *testing.M) {
 	var err error
 
-	fmt.Printf("Starting backends")
+	fmt.Printf("Starting backends\n")
 	endpoint := "unix:///var/run/docker.sock"
 	dockerClient, err = docker.NewClient(endpoint)
 
@@ -25,7 +26,6 @@ func TestMain(m *testing.M) {
 	}
 
 	rmRabbit()
-	runRabbit()
 
 	status := m.Run()
 
@@ -34,6 +34,7 @@ func TestMain(m *testing.M) {
 	os.Exit(status)
 }
 func rmRabbit() {
+	fmt.Printf("Removing rabbitmq backend\n")
 	rmCtnOpt := docker.RemoveContainerOptions{
 		ID:            "rabbitmq-tests",
 		RemoveVolumes: true,
@@ -67,9 +68,14 @@ try:
 		Config: &docker.Config{
 			Image: "rabbitmq",
 			ExposedPorts: map[docker.Port]struct{}{
-				"5674":  struct{}{},
-				"15674": struct{}{},
+				"5672/tcp": {},
 			},
+		},
+		HostConfig: &docker.HostConfig{
+			PortBindings: map[docker.Port][]docker.PortBinding{
+				"5672/tcp": []docker.PortBinding{docker.PortBinding{HostPort: "5672"}}},
+			PublishAllPorts: true,
+			Privileged:      false,
 		},
 	}
 
@@ -100,9 +106,45 @@ try:
 }
 
 func TestDial(t *testing.T) {
+	conn := New()
+	err := conn.Dial("amqp://guest:guest@localhost:5672/%2f")
+
+	if err == nil {
+		t.Error("No backend started... Should fail")
+		return
+	}
+
+	rabbitCtn, err := runRabbit()
 	if err != nil {
 		t.Error(err)
 	}
+
+	// Wait a few seconds to rabbitmq finish the setup
+	time.Sleep(3 * time.Second)
+
+	err = conn.Dial("amqp://guest:guest@localhost:5672/%2f")
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	conn.AutoRedial()
+
+	dockerClient.StopContainer(rabbitCtn.ID, 3)
+
+	time.Sleep(10 * time.Second)
+
+	err = dockerClient.StartContainer(rabbitCtn.ID, nil)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	time.Sleep(3 * time.Second)
+
+	
 
 	fmt.Println(rabbitCtn)
 }

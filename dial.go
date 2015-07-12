@@ -9,7 +9,7 @@ import (
 
 type AMQPConn struct {
 	Conn     *amqp.Connection
-	dialFn   func() (*AMQPConn, error)
+	dialFn   func() error
 	attempts uint8
 }
 
@@ -17,17 +17,17 @@ func New() *AMQPConn {
 	return &AMQPConn{}
 }
 
-func (conn *AMQPConn) Dial(uri string) (*AMQPConn, error) {
-	conn.dialFn = func() (*AMQPConn, error) {
+func (conn *AMQPConn) Dial(uri string) error {
+	conn.dialFn = func() error {
 		var err error
 
 		conn.Conn, err = amqp.Dial(uri)
 
 		if err != nil {
-			return nil, err
+			return err
 		}
 
-		return conn, nil
+		return nil
 	}
 
 	return conn.dialFn()
@@ -53,12 +53,14 @@ func (conn *AMQPConn) AutoRedial() *AMQPConn {
 
 			time.Sleep(time.Duration(int64(conn.attempts) * int64(time.Second)))
 
-			conn, err = conn.dialFn()
+			err = conn.dialFn()
 
 			if err != nil {
 				conn.attempts += 1
 				goto attempt
 			}
+
+			conn.AutoRedial()
 		}
 	}()
 
