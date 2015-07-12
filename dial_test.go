@@ -142,9 +142,7 @@ func TestDial(t *testing.T) {
 		return
 	}
 
-	time.Sleep(3 * time.Second)
+	time.Sleep(5 * time.Second)
 
-	
-
-	fmt.Println(rabbitCtn)
+	conn.Conn.Close()
 }
