@@ -6,6 +6,7 @@ import (
 	"github.com/streadway/amqp"
 )
 
+// Conn is the amqp connection
 type Conn struct {
 	conn *amqp.Connection
 
@@ -14,10 +15,12 @@ type Conn struct {
 	attempts uint8
 }
 
+// New do what the fucking name says...
 func New() *Conn {
 	return &Conn{}
 }
 
+// Dial to rabbitmq
 func (conn *Conn) Dial(uri string) error {
 	// closure the uri for handle reconnects
 	conn.dialFn = func() error {
@@ -35,6 +38,7 @@ func (conn *Conn) Dial(uri string) error {
 	return conn.dialFn()
 }
 
+// Close the connection
 func (conn *Conn) Close() error {
 	return conn.conn.Close()
 }
@@ -79,7 +83,7 @@ func (conn *Conn) AutoRedial(outChan chan error, onSuccess func()) {
 			err = conn.dialFn()
 
 			if err != nil {
-				conn.attempts += 1
+				conn.attempts++
 				goto attempts
 			}
 
