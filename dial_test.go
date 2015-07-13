@@ -1,7 +1,9 @@
 package amqputil
 
 import (
+	"bufio"
 	"fmt"
+	"net"
 	"os"
 	"testing"
 	"time"
@@ -16,7 +18,7 @@ var (
 func TestMain(m *testing.M) {
 	var err error
 
-	fmt.Printf("Starting backends\n")
+	// Start the amqp backend on test startup
 	endpoint := "unix:///var/run/docker.sock"
 	dockerClient, err = docker.NewClient(endpoint)
 
@@ -25,16 +27,19 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 
+	// remove any previously executed rabbitmq container with name
+	// rabbitmq-tests
 	rmRabbit()
 
+	// Execute the tests
 	status := m.Run()
 
+	// remove the backend container
 	rmRabbit()
 
 	os.Exit(status)
 }
 func rmRabbit() {
-	fmt.Printf("Removing rabbitmq backend\n")
 	rmCtnOpt := docker.RemoveContainerOptions{
 		ID:            "rabbitmq-tests",
 		RemoveVolumes: true,
@@ -60,40 +65,51 @@ func pullRabbit() error {
 	return nil
 }
 
+// runRabbit execute a container with rabbitmq daemon
+// If docker fail to create the container, then try to pull the
+// last version of rabbitmq image from registry. If fail again,
+// then returns error.
+// When rabbitmq is successfully started, block until it finish the
+// setup and is ready to accept connections.
 func runRabbit() (*docker.Container, error) {
-	var pulled bool
-try:
-	opts := docker.CreateContainerOptions{
-		Name: "rabbitmq-tests",
-		Config: &docker.Config{
-			Image: "rabbitmq",
-			ExposedPorts: map[docker.Port]struct{}{
-				"5672/tcp": {},
+	var rabbitCtn *docker.Container
+
+	createContainer := func() (*docker.Container, error) {
+		opts := docker.CreateContainerOptions{
+			Name: "rabbitmq-tests",
+			Config: &docker.Config{
+				Image: "rabbitmq",
+				ExposedPorts: map[docker.Port]struct{}{
+					"5672/tcp": {},
+				},
 			},
-		},
-		HostConfig: &docker.HostConfig{
-			PortBindings: map[docker.Port][]docker.PortBinding{
-				"5672/tcp": []docker.PortBinding{docker.PortBinding{HostPort: "5672"}}},
-			PublishAllPorts: true,
-			Privileged:      false,
-		},
-	}
-
-	rabbitCtn, err := dockerClient.CreateContainer(opts)
-
-	if err != nil {
-		if !pulled {
-			err = pullRabbit()
-
-			if err != nil {
-				return nil, err
-			}
-
-			pulled = true
-			goto try
+			HostConfig: &docker.HostConfig{
+				PortBindings: map[docker.Port][]docker.PortBinding{
+					"5672/tcp": []docker.PortBinding{docker.PortBinding{HostPort: "5672"}}},
+				PublishAllPorts: true,
+				Privileged:      false,
+			},
 		}
 
-		return nil, err
+		rabbitCtn, err := dockerClient.CreateContainer(opts)
+
+		return rabbitCtn, err
+	}
+
+	rabbitCtn, err := createContainer()
+
+	if err != nil {
+		err = pullRabbit()
+
+		if err != nil {
+			return nil, err
+		}
+
+		rabbitCtn, err = createContainer()
+
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	err = dockerClient.StartContainer(rabbitCtn.ID, nil)
@@ -102,10 +118,36 @@ try:
 		return nil, err
 	}
 
+	// block until rabbitmq can accept connections on port 5672
+	waitRabbit()
+
 	return rabbitCtn, nil
 }
 
+// waitRabbit blocks until rabbitmq can accept connections on
+// localhost:5672
+func waitRabbit() {
+dial:
+	conn, err := net.Dial("tcp", "localhost:5672")
+	if err != nil {
+		time.Sleep(500 * time.Millisecond)
+		goto dial
+	}
+
+	fmt.Fprintf(conn, "AMQP%00091")
+	_, err := bufio.NewReader(conn).ReadString('\n')
+
+	if err != nil && err.Error() != "EOF" {
+		conn.Close()
+		time.Sleep(500 * time.Millisecond)
+		goto dial
+	}
+}
+
+// TestDial test a simple connection to rabbitmq.
+// If the rabbitmq disconnects will not be tested here!
 func TestDial(t *testing.T) {
+	// Should fail
 	conn := New()
 	err := conn.Dial("amqp://guest:guest@localhost:5672/%2f")
 
@@ -118,9 +160,6 @@ func TestDial(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-
-	// Wait a few seconds to rabbitmq finish the setup
-	time.Sleep(3 * time.Second)
 
 	err = conn.Dial("amqp://guest:guest@localhost:5672/%2f")
 
