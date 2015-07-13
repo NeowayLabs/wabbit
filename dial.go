@@ -1,16 +1,15 @@
 package amqputil
 
 import (
-	"errors"
 	"time"
 
 	"github.com/streadway/amqp"
 )
 
 type AMQPConn struct {
-	Conn     *amqp.Connection
-	dialFn   func() error
-	attempts uint8
+	Conn        *amqp.Connection
+	dialFn      func() error
+	attempts    uint8
 	IsConnected bool
 }
 
@@ -36,7 +35,14 @@ func (conn *AMQPConn) Dial(uri string) error {
 	return conn.dialFn()
 }
 
-func (conn *AMQPConn) AutoRedial(outChan chan error) {
+// AutoRedial manages the automatic redial of connection when unexpected closed.
+// outChan is an unbuffered channel required to receive the errors that results from
+// attempts of reconnect. On successfully reconnected, the function onSuccess
+// is invoked.
+//
+// The outChan parameter can receive *amqp.Error for AMQP connection errors
+// or errors.Error for any other net/tcp internal error.
+func (conn *AMQPConn) AutoRedial(outChan chan error, onSuccess func()) {
 	errChan := conn.Conn.NotifyClose(make(chan *amqp.Error))
 
 	go func() {
@@ -44,29 +50,36 @@ func (conn *AMQPConn) AutoRedial(outChan chan error) {
 
 		select {
 		case amqpErr := <-errChan:
+			conn.IsConnected = false
 			err = amqpErr
-		attempt:
-			if err != nil {
-				conn.IsConnected = false
-				outChan <- errors.New(err.Error())
+
+			if amqpErr == nil {
+				// Gracefull connection close
+				return
 			}
+		attempts:
+			outChan <- err
 
 			if conn.attempts > 60 {
 				conn.attempts = 0
 			}
 
 			// Wait n Seconds where n == conn.attempts...
-			time.Sleep(time.Duration(int64(conn.attempts) * int64(time.Second)))
+			time.Sleep(time.Duration(conn.attempts) * time.Second)
 
 			err = conn.dialFn()
 
 			if err != nil {
 				conn.attempts += 1
-				goto attempt
+				goto attempts
 			}
 
+			conn.attempts = 0
+
 			// enabled AutoRedial on the new connection
-			conn.AutoRedial(outChan)
+			conn.AutoRedial(outChan, onSuccess)
+			onSuccess()
+			return
 		}
 	}()
 }

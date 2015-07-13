@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"runtime"
 	"testing"
 	"time"
 
@@ -168,16 +169,30 @@ func TestDial(t *testing.T) {
 		return
 	}
 
+	var success = false
 	redialErrors := make(chan error)
-	conn.AutoRedial(redialErrors)
+	conn.AutoRedial(redialErrors, func () {
+		// this function should be executed is successfully reconnected
+		// here we can recover the application state (if needed)
+		success = true
+	})
+
+	// required goroutine to consume connection error messages
+	go func() {
+		for {
+			// discards the connection errors
+			<-redialErrors
+		}
+	}()
 
 	dockerClient.StopContainer(rabbitCtn.ID, 3)
 
 	// concurrently starts the rabbitmq after 1 second
 	go func() {
 		time.Sleep(1 * time.Second)
-		
-		err = dockerClient.StartContainer(rabbitCtn.ID, nil)
+
+		fmt.Printf("Starting rabbit\n")
+		err := dockerClient.StartContainer(rabbitCtn.ID, nil)
 
 		if err != nil {
 			t.Error(err)
@@ -185,14 +200,9 @@ func TestDial(t *testing.T) {
 		}
 	}()
 
-	go func() {
-		for {
-			fmt.Printf("[ERROR] %s\n", <-redialErrors)
-		}
-	}()
-
 	// Wait 3 seconds to reconnect
 	for i := 0; i < 3; i++ {
+		runtime.Gosched()
 		if conn.IsConnected {
 			break
 		}
@@ -200,8 +210,9 @@ func TestDial(t *testing.T) {
 		time.Sleep(time.Second)
 	}
 
-	if !conn.IsConnected {
-		t.Errorf("Client doesn't reconnect in 3 seconds")
+	if !conn.IsConnected || success == false {
+		t.Errorf("Client doesn't reconnect in 3 seconds: %s", conn.IsConnected)
+		return
 	}
 
 	conn.Conn.Close()
