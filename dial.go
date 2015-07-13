@@ -8,9 +8,10 @@ import (
 
 type AMQPConn struct {
 	Conn        *amqp.Connection
+
+	// closure info of connection
 	dialFn      func() error
 	attempts    uint8
-	IsConnected bool
 }
 
 func New() *AMQPConn {
@@ -21,14 +22,12 @@ func (conn *AMQPConn) Dial(uri string) error {
 	conn.dialFn = func() error {
 		var err error
 
-		conn.IsConnected = false
 		conn.Conn, err = amqp.Dial(uri)
 
 		if err != nil {
 			return err
 		}
 
-		conn.IsConnected = true
 		return nil
 	}
 
@@ -50,7 +49,6 @@ func (conn *AMQPConn) AutoRedial(outChan chan error, onSuccess func()) {
 
 		select {
 		case amqpErr := <-errChan:
-			conn.IsConnected = false
 			err = amqpErr
 
 			if amqpErr == nil {

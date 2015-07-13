@@ -157,7 +157,7 @@ func TestDial(t *testing.T) {
 		return
 	}
 
-	rabbitCtn, err := runRabbit()
+	_, err = runRabbit()
 	if err != nil {
 		t.Error(err)
 	}
@@ -169,11 +169,30 @@ func TestDial(t *testing.T) {
 		return
 	}
 
+	rmRabbit()
+}
+
+func TestAutoRedial(t *testing.T) {
+	rabbitCtn, err := runRabbit()
+
+	if err != nil {
+		t.Errorf("Failed to start rabbitmq: %s", err.Error())
+		return
+	}
+
+	conn := New()
+	err = conn.Dial("amqp://guest:guest@localhost:5672/%2f")
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
 	var success = false
 	redialErrors := make(chan error)
 	conn.AutoRedial(redialErrors, func () {
-		// this function should be executed is successfully reconnected
-		// here we can recover the application state (if needed)
+		// this function should be executed if successfully reconnected
+		// here we can recover the application state after reconnect  (if needed)
 		success = true
 	})
 
@@ -191,7 +210,6 @@ func TestDial(t *testing.T) {
 	go func() {
 		time.Sleep(1 * time.Second)
 
-		fmt.Printf("Starting rabbit\n")
 		err := dockerClient.StartContainer(rabbitCtn.ID, nil)
 
 		if err != nil {
@@ -203,15 +221,15 @@ func TestDial(t *testing.T) {
 	// Wait 3 seconds to reconnect
 	for i := 0; i < 3; i++ {
 		runtime.Gosched()
-		if conn.IsConnected {
+		if success {
 			break
 		}
 
 		time.Sleep(time.Second)
 	}
 
-	if !conn.IsConnected || success == false {
-		t.Errorf("Client doesn't reconnect in 3 seconds: %s", conn.IsConnected)
+	if success == false {
+		t.Errorf("Client doesn't reconnect in 3 seconds")
 		return
 	}
 
