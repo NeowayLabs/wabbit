@@ -7,11 +7,11 @@ import (
 )
 
 type AMQPConn struct {
-	Conn        *amqp.Connection
+	Conn *amqp.Connection
 
 	// closure info of connection
-	dialFn      func() error
-	attempts    uint8
+	dialFn   func() error
+	attempts uint8
 }
 
 func New() *AMQPConn {
@@ -19,6 +19,7 @@ func New() *AMQPConn {
 }
 
 func (conn *AMQPConn) Dial(uri string) error {
+	// closure the uri for handle reconnects
 	conn.dialFn = func() error {
 		var err error
 
