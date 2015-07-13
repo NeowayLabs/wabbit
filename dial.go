@@ -6,24 +6,24 @@ import (
 	"github.com/streadway/amqp"
 )
 
-type AMQPConn struct {
-	Conn *amqp.Connection
+type Conn struct {
+	conn *amqp.Connection
 
 	// closure info of connection
 	dialFn   func() error
 	attempts uint8
 }
 
-func New() *AMQPConn {
-	return &AMQPConn{}
+func New() *Conn {
+	return &Conn{}
 }
 
-func (conn *AMQPConn) Dial(uri string) error {
+func (conn *Conn) Dial(uri string) error {
 	// closure the uri for handle reconnects
 	conn.dialFn = func() error {
 		var err error
 
-		conn.Conn, err = amqp.Dial(uri)
+		conn.conn, err = amqp.Dial(uri)
 
 		if err != nil {
 			return err
@@ -35,6 +35,10 @@ func (conn *AMQPConn) Dial(uri string) error {
 	return conn.dialFn()
 }
 
+func (conn *Conn) Close() error {
+	return conn.conn.Close()
+}
+
 // AutoRedial manages the automatic redial of connection when unexpected closed.
 // outChan is an unbuffered channel required to receive the errors that results from
 // attempts of reconnect. On successfully reconnected, the function onSuccess
@@ -42,8 +46,14 @@ func (conn *AMQPConn) Dial(uri string) error {
 //
 // The outChan parameter can receive *amqp.Error for AMQP connection errors
 // or errors.Error for any other net/tcp internal error.
-func (conn *AMQPConn) AutoRedial(outChan chan error, onSuccess func()) {
-	errChan := conn.Conn.NotifyClose(make(chan *amqp.Error))
+//
+// Redial strategy:
+// If the connection is closed in an unexpected way (opposite of conn.Close()), then
+// AutoRedial will try to automatically reconnect waiting for N seconds before each
+// attempt, where N is the number of attempts of reconnecting. If the number of
+// attempts reach 60, it will be zero'ed.
+func (conn *Conn) AutoRedial(outChan chan error, onSuccess func()) {
+	errChan := conn.conn.NotifyClose(make(chan *amqp.Error))
 
 	go func() {
 		var err error

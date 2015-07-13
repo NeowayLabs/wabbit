@@ -233,5 +233,5 @@ func TestAutoRedial(t *testing.T) {
 		return
 	}
 
-	conn.Conn.Close()
+	conn.Close()
 }
