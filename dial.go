@@ -1,7 +1,7 @@
 package amqputil
 
 import (
-	"log"
+	"errors"
 	"time"
 
 	"github.com/streadway/amqp"
@@ -11,6 +11,7 @@ type AMQPConn struct {
 	Conn     *amqp.Connection
 	dialFn   func() error
 	attempts uint8
+	IsConnected bool
 }
 
 func New() *AMQPConn {
@@ -21,19 +22,21 @@ func (conn *AMQPConn) Dial(uri string) error {
 	conn.dialFn = func() error {
 		var err error
 
+		conn.IsConnected = false
 		conn.Conn, err = amqp.Dial(uri)
 
 		if err != nil {
 			return err
 		}
 
+		conn.IsConnected = true
 		return nil
 	}
 
 	return conn.dialFn()
 }
 
-func (conn *AMQPConn) AutoRedial() *AMQPConn {
+func (conn *AMQPConn) AutoRedial(outChan chan error) {
 	errChan := conn.Conn.NotifyClose(make(chan *amqp.Error))
 
 	go func() {
@@ -44,13 +47,15 @@ func (conn *AMQPConn) AutoRedial() *AMQPConn {
 			err = amqpErr
 		attempt:
 			if err != nil {
-				log.Printf("[ERROR] %s", err)
+				conn.IsConnected = false
+				outChan <- errors.New(err.Error())
 			}
 
 			if conn.attempts > 60 {
 				conn.attempts = 0
 			}
 
+			// Wait n Seconds where n == conn.attempts...
 			time.Sleep(time.Duration(int64(conn.attempts) * int64(time.Second)))
 
 			err = conn.dialFn()
@@ -60,9 +65,8 @@ func (conn *AMQPConn) AutoRedial() *AMQPConn {
 				goto attempt
 			}
 
-			conn.AutoRedial()
+			// enabled AutoRedial on the new connection
+			conn.AutoRedial(outChan)
 		}
 	}()
-
-	return conn
 }

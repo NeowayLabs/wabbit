@@ -135,7 +135,7 @@ dial:
 	}
 
 	fmt.Fprintf(conn, "AMQP%00091")
-	_, err := bufio.NewReader(conn).ReadString('\n')
+	_, err = bufio.NewReader(conn).ReadString('\n')
 
 	if err != nil && err.Error() != "EOF" {
 		conn.Close()
@@ -168,20 +168,41 @@ func TestDial(t *testing.T) {
 		return
 	}
 
-	conn.AutoRedial()
+	redialErrors := make(chan error)
+	conn.AutoRedial(redialErrors)
 
 	dockerClient.StopContainer(rabbitCtn.ID, 3)
 
-	time.Sleep(10 * time.Second)
+	// concurrently starts the rabbitmq after 1 second
+	go func() {
+		time.Sleep(1 * time.Second)
+		
+		err = dockerClient.StartContainer(rabbitCtn.ID, nil)
 
-	err = dockerClient.StartContainer(rabbitCtn.ID, nil)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+	}()
 
-	if err != nil {
-		t.Error(err)
-		return
+	go func() {
+		for {
+			fmt.Printf("[ERROR] %s\n", <-redialErrors)
+		}
+	}()
+
+	// Wait 3 seconds to reconnect
+	for i := 0; i < 3; i++ {
+		if conn.IsConnected {
+			break
+		}
+
+		time.Sleep(time.Second)
 	}
 
-	time.Sleep(5 * time.Second)
+	if !conn.IsConnected {
+		t.Errorf("Client doesn't reconnect in 3 seconds")
+	}
 
 	conn.Conn.Close()
 }
