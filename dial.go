@@ -8,7 +8,7 @@ import (
 
 // Conn is the amqp connection
 type Conn struct {
-	conn *amqp.Connection
+	*amqp.Connection
 
 	// closure info of connection
 	dialFn   func() error
@@ -26,7 +26,7 @@ func (conn *Conn) Dial(uri string) error {
 	conn.dialFn = func() error {
 		var err error
 
-		conn.conn, err = amqp.Dial(uri)
+		conn.Connection, err = amqp.Dial(uri)
 
 		if err != nil {
 			return err
@@ -36,11 +36,6 @@ func (conn *Conn) Dial(uri string) error {
 	}
 
 	return conn.dialFn()
-}
-
-// Close the connection
-func (conn *Conn) Close() error {
-	return conn.conn.Close()
 }
 
 // AutoRedial manages the automatic redial of connection when unexpected closed.
@@ -57,7 +52,7 @@ func (conn *Conn) Close() error {
 // attempt, where N is the number of attempts of reconnecting. If the number of
 // attempts reach 60, it will be zero'ed.
 func (conn *Conn) AutoRedial(outChan chan error, onSuccess func()) {
-	errChan := conn.conn.NotifyClose(make(chan *amqp.Error))
+	errChan := conn.NotifyClose(make(chan *amqp.Error))
 
 	go func() {
 		var err error
