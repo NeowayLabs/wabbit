@@ -37,7 +37,7 @@ func TestMain(m *testing.M) {
 func TestDial(t *testing.T) {
 	// Should fail
 	conn := New()
-	err := conn.Dial("amqp://guest:guest@localhost:5672/%2f")
+	err := conn.Dial("amqp://guest:guest@localhost:35672/%2f")
 
 	if err == nil {
 		t.Error("No backend started... Should fail")
@@ -49,7 +49,7 @@ func TestDial(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = conn.Dial("amqp://guest:guest@localhost:5672/%2f")
+	err = conn.Dial("amqp://guest:guest@localhost:35672/%2f")
 
 	if err != nil {
 		t.Error(err)
@@ -68,7 +68,7 @@ func TestAutoRedial(t *testing.T) {
 	}
 
 	conn := New()
-	err = conn.Dial("amqp://guest:guest@localhost:5672/%2f")
+	err = conn.Dial("amqp://guest:guest@localhost:35672/%2f")
 
 	if err != nil {
 		t.Error(err)
