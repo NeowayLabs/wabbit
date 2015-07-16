@@ -49,6 +49,13 @@ func TestDial(t *testing.T) {
 		t.Error(err)
 	}
 
+	err = rabbitctl.WaitOK("localhost")
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
 	err = conn.Dial("amqp://guest:guest@localhost:35672/%2f")
 
 	if err != nil {
@@ -64,6 +71,13 @@ func TestAutoRedial(t *testing.T) {
 
 	if err != nil {
 		t.Errorf("Failed to start rabbitmq: %s", err.Error())
+		return
+	}
+
+	err = rabbitctl.WaitOK("localhost")
+
+	if err != nil {
+		t.Error(err)
 		return
 	}
 
