@@ -1,6 +1,7 @@
-package amqputil
+package rabbitmq
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/streadway/amqp"
@@ -66,6 +67,7 @@ func (conn *Conn) AutoRedial(outChan chan error, onSuccess func()) {
 				return
 			}
 		attempts:
+			fmt.Printf("Connection attempt... %d\n", conn.attempts)
 			outChan <- err
 
 			if conn.attempts > 60 {
@@ -78,6 +80,7 @@ func (conn *Conn) AutoRedial(outChan chan error, onSuccess func()) {
 			err = conn.dialFn()
 
 			if err != nil {
+				fmt.Printf("Connection failed... retrying.. %d\n", conn.attempts)
 				conn.attempts++
 				goto attempts
 			}

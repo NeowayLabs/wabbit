@@ -1,4 +1,4 @@
-package amqputil
+package rabbitmq
 
 import (
 	"os"
