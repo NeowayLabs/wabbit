@@ -1,35 +1,74 @@
 package rabbitmq
 
 import (
+	"fmt"
 	"os"
 	"runtime"
 	"testing"
 	"time"
 
+	"github.com/fsouza/go-dockerclient"
 	"github.com/tiago4orion/conjure"
 )
 
 var (
-	rabbitctl *conjure.RabbitMQ
+	dockerClient    *conjure.Client
+	rabbitmqCtn     *docker.Container
+	rabbitmqCtnName = "test-rabbitmq"
+	rabbitmqPort    = "35672"
+	rabbitmqSpec    = `{
+		"Name": "` + rabbitmqCtnName + `",
+		"Config": {
+			"Image": "rabbitmq",
+			"ExposedPorts": {
+				"5672/tcp": {}
+			}
+		},
+		"HostConfig": {
+			"PortBindings": {
+				"5672/tcp": [
+					{
+						"HostPort": "` + rabbitmqPort + `"
+					}
+				]
+			},
+			"PublishAllPorts": true,
+			"Privileged": false
+		}
+	}`
 )
 
 func TestMain(m *testing.M) {
 	var err error
 
-	ctnClient, err := conjure.NewClient()
+	dockerClient, err = conjure.NewClient()
 
-	if err != nil || ctnClient == nil {
+	if err != nil || dockerClient == nil {
 		panic(err.Error())
 	}
-
-	rabbitctl = conjure.NewRabbitMQ(ctnClient)
 
 	// Execute the tests
 	status := m.Run()
 
 	// remove the backend container
-	rabbitctl.Remove()
+	dockerClient.Remove(rabbitmqCtnName)
 	os.Exit(status)
+}
+
+// WaitOK blocks until rabbitmq can accept connections on
+// <ctn ip address>:5672
+func waitRabbitOK(host string) error {
+	var err error
+	conn := New()
+dial:
+	err = conn.Dial("amqp://guest:guest@" + host + ":" + rabbitmqPort + "/%2f")
+	if err != nil {
+		fmt.Printf("Failed to connect to rabbitmq: %s\n", err.Error())
+		time.Sleep(500 * time.Millisecond)
+		goto dial
+	}
+
+	return nil
 }
 
 // TestDial test a simple connection to rabbitmq.
@@ -44,12 +83,12 @@ func TestDial(t *testing.T) {
 		return
 	}
 
-	err = rabbitctl.Run()
+	rabbitmqCtn, err = dockerClient.Run(rabbitmqSpec)
 	if err != nil {
 		t.Error(err)
 	}
 
-	err = rabbitctl.WaitOK("localhost")
+	err = waitRabbitOK("localhost")
 
 	if err != nil {
 		t.Error(err)
@@ -63,18 +102,20 @@ func TestDial(t *testing.T) {
 		return
 	}
 
-	rabbitctl.Remove()
+	dockerClient.Remove(rabbitmqCtnName)
 }
 
 func TestAutoRedial(t *testing.T) {
-	err :=rabbitctl.Run()
+	var err error
+
+	rabbitmqCtn, err = dockerClient.Run(rabbitmqSpec)
 
 	if err != nil {
 		t.Errorf("Failed to start rabbitmq: %s", err.Error())
 		return
 	}
 
-	err = rabbitctl.WaitOK("localhost")
+	err = waitRabbitOK("localhost")
 
 	if err != nil {
 		t.Error(err)
@@ -105,13 +146,13 @@ func TestAutoRedial(t *testing.T) {
 		}
 	}()
 
-	rabbitctl.Stop()
+	dockerClient.StopContainer(rabbitmqCtnName, 3)
 
 	// concurrently starts the rabbitmq after 1 second
 	go func() {
 		time.Sleep(1 * time.Second)
 
-		err := rabbitctl.Start()
+		err := dockerClient.StartContainer(rabbitmqCtnName, nil)
 
 		if err != nil {
 			t.Error(err)
@@ -135,4 +176,6 @@ func TestAutoRedial(t *testing.T) {
 	}
 
 	conn.Close()
+
+	dockerClient.Remove(rabbitmqCtnName)
 }

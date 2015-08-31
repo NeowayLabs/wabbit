@@ -1,0 +1,4 @@
+
+
+check:
+	go test -v ./...
