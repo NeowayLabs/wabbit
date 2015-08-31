@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/fsouza/go-dockerclient"
+	"github.com/tiago4orion/amqputil"
 	"github.com/tiago4orion/conjure"
 )
 
@@ -178,4 +179,24 @@ func TestAutoRedial(t *testing.T) {
 	conn.Close()
 
 	dockerClient.Remove(rabbitmqCtnName)
+}
+
+func TestChannelMock(t *testing.T) {
+	var channel amqputil.Channel
+
+	channel = new(Channel)
+
+	if channel == nil {
+		t.Error("Maybe amqputil.Channel interface does not mock amqp.Channel correctly")
+	}
+}
+
+func TestConnMock(t *testing.T) {
+	var conn amqputil.Conn
+
+	conn = New()
+
+	if conn == nil {
+		t.Error("Maybe amqputil.Conn interface does not mock amqp.Conn correctly")
+	}
 }

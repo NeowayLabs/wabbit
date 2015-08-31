@@ -4,7 +4,7 @@ package amqputil
 
 type (
 	Conn interface{
-		Channel() Channel
+		Channel() (Channel, error)
 		Dial(amqpuri string) error
 		AutoRedial(errChan chan error, cbk func())
 	}
@@ -13,6 +13,8 @@ type (
 		Ack(tag uint64, multiple bool) error
 		Nack(tag uint64, multiple bool, requeue bool) error
 		Reject(tag uint64, requeue bool) error
+		
+		Publisher
 	}
 
 	Publisher interface{

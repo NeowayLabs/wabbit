@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/streadway/amqp"
+	"github.com/tiago4orion/amqputil"
 )
 
 // Conn is the amqp connection
@@ -90,4 +91,14 @@ func (conn *Conn) AutoRedial(outChan chan error, onSuccess func()) {
 			return
 		}
 	}()
+}
+
+func (conn *Conn) Channel() (amqputil.Channel, error) {
+	ch, err := conn.Connection.Channel()
+	
+	if err != nil {
+		return nil, err
+	}
+
+	return &Channel{ch}, nil
 }
