@@ -184,6 +184,7 @@ func TestAutoRedial(t *testing.T) {
 func TestChannelMock(t *testing.T) {
 	var channel amqputil.Channel
 
+	// rabbitmq.Channel satisfies amqputil.Channel interface
 	channel = new(Channel)
 
 	if channel == nil {
@@ -194,6 +195,7 @@ func TestChannelMock(t *testing.T) {
 func TestConnMock(t *testing.T) {
 	var conn amqputil.Conn
 
+	// rabbitmq.Conn satisfies amqputil.Conn interface
 	conn = New()
 
 	if conn == nil {
