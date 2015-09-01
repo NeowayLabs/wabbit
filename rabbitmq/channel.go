@@ -38,7 +38,7 @@ func (ch *Channel) Consume(queue, consumer string, autoAck, exclusive, noLocal, 
 
 	go func() {
 		for d := range amqpd {
-			deliveries <- Delivery{&d}
+			deliveries <- &Delivery{&d}
 		}
 	}()
 

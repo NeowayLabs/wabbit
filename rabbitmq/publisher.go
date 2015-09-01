@@ -3,11 +3,11 @@ package rabbitmq
 import "github.com/tiago4orion/amqputil"
 
 type Publisher struct {
-	conn    *Conn
+	conn    amqputil.Conn
 	channel amqputil.Publisher
 }
 
-func NewPublisher(conn *Conn) (*Publisher, error) {
+func NewPublisher(conn amqputil.Conn) (*Publisher, error) {
 	var err error
 
 	pb := Publisher{

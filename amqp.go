@@ -34,7 +34,12 @@ type (
 	}
 
 	Delivery interface {
-		
+		Ack(multiple bool) error
+		Nack(multiple, request bool) error
+		Reject(requeue bool) error
+
+		Body() []byte
+		DeliveryTag() uint64
 	}
 )
 
