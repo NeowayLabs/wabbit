@@ -35,7 +35,7 @@ func (ch *Channel) ExchangeDeclare(name, kind string, opt amqputil.Option) error
 }
 
 func (ch *Channel) QueueDeclare(name string,  args amqputil.Option) (amqputil.Queue, error) {
-	return nil, nil
+	return NewQueue(name), nil
 }
 
 func (ch *Channel) QueueBind(name, key, exchange string, opt amqputil.Option) error {

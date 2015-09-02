@@ -6,6 +6,12 @@ type Queue struct {
 	messages int
 }
 
+func NewQueue(name string) *Queue {
+	return &Queue{
+		name: name,
+	}
+}
+
 func (q *Queue) Name() string {
 	return q.name
 }
