@@ -17,31 +17,30 @@ var (
 	// the fake rabbitmq server is running, isn't ?
 	Running bool
 	errChan chan error
+	mu      *sync.Mutex
 )
 
 func init() {
 	errChan = make(chan error)
+	mu = &sync.Mutex{}
 }
 
 type Conn struct {
 	isConnected bool
-	l           *sync.Mutex
 	attempts    uint
 
 	dialFn func() error
 }
 
 func New() *Conn {
-	return &Conn{
-		l: &sync.Mutex{},
-	}
+	return &Conn{}
 }
 
 // Dial mock the connection dialing to rabbitmq
 func (conn *Conn) Dial(amqpuri string) error {
 	conn.dialFn = func() error {
-		conn.l.Lock()
-		defer conn.l.Unlock()
+		mu.Lock()
+		defer mu.Unlock()
 
 		if Running {
 			conn.isConnected = true
@@ -107,11 +106,16 @@ func (conn *Conn) Channel() (amqputil.Channel, error) {
 }
 
 func StartRabbitmq() {
+	mu.Lock()
+
+	defer mu.Unlock()
 	Running = true
 }
 
 func StopRabbitmq() {
+	mu.Lock()
 	Running = false
+	mu.Unlock()
 
 	go func() {
 		errChan <- errors.New("rabbitmq disconnected")

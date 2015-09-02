@@ -3,8 +3,10 @@
 package amqputil
 
 type (
+	// Option is a map of AMQP configurations
 	Option map[string]interface{}
 
+	// Conn is a amqp connection interface
 	Conn interface {
 		Channel() (Channel, error)
 		Dial(amqpuri string) error
@@ -12,6 +14,7 @@ type (
 		Close() error
 	}
 
+	// Channel is a AMQP channel interface
 	Channel interface {
 		Ack(tag uint64, multiple bool) error
 		Nack(tag uint64, multiple bool, requeue bool) error
@@ -25,16 +28,19 @@ type (
 		Publisher
 	}
 
+	// Queue is a AMQP queue interface
 	Queue interface {
 		Name() string
 		Messages() int
 		Consumers() int
 	}
 
+	// Publisher is an interface to something able to publish messages
 	Publisher interface {
 		Publish(exc, route string, msg []byte) error
 	}
 
+	// Delivery is an interface to delivered messages
 	Delivery interface {
 		Ack(multiple bool) error
 		Nack(multiple, request bool) error

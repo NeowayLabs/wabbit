@@ -1,7 +1,6 @@
 package mock
 
 import (
-	"fmt"
 	"runtime"
 	"testing"
 	"time"
@@ -15,12 +14,17 @@ var rabbitmqPort = "35672"
 // <ctn ip address>:5672
 func waitRabbitOK(host string) error {
 	var err error
+	var counter = 0
 	conn := New()
 dial:
+	if counter > 120 {
+		panic("Impossible to connect to rabbitmq")
+	}
+
 	err = conn.Dial("amqp://guest:guest@" + host + ":" + rabbitmqPort + "/%2f")
 	if err != nil {
-		fmt.Printf("Failed to connect to rabbitmq: %s\n", err.Error())
 		time.Sleep(500 * time.Millisecond)
+		counter++
 		goto dial
 	}
 
