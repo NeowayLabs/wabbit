@@ -21,7 +21,7 @@ the code below:
   
   mock.StartRabbit()
   
-  err = mockConn.Dial(""amqp://localhost:5672/%2f") // now it works =D
+  err = mockConn.Dial("amqp://localhost:5672/%2f") // now it works =D
 ```
 
 It's a very straightforward implementation that need a lot of improvements yet. Take careful when using it.
