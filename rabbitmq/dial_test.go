@@ -45,8 +45,11 @@ func TestMain(m *testing.M) {
 	dockerClient, err = conjure.NewClient()
 
 	if err != nil || dockerClient == nil {
+		fmt.Printf("You need docker >= 1.6 installed to enable testing rabbitmq backend\n")
 		panic(err.Error())
 	}
+
+	dockerClient.Remove(rabbitmqCtnName)
 
 	// Execute the tests
 	status := m.Run()

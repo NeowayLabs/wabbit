@@ -1,6 +1,8 @@
 package rabbitmq
 
 import (
+	"errors"
+
 	"github.com/streadway/amqp"
 	"github.com/tiago4orion/amqputil"
 )
@@ -45,8 +47,53 @@ func (ch *Channel) Consume(queue, consumer string, autoAck, exclusive, noLocal, 
 	return deliveries, nil
 }
 
-func (ch *Channel) ExchangeDeclare(name, kind string, durable, autoDelete, internal, noWait bool, args interface{}) error {
-	return ch.Channel.ExchangeDeclare(name, kind, durable, autoDelete, internal, noWait, args.(amqp.Table))
+func (ch *Channel) ExchangeDeclare(name, kind string, opt amqputil.Option) error {
+	var (
+		durable, autoDelete, internal, noWait bool
+		args                                  amqp.Table
+	)
+
+	if v, ok := opt["durable"]; ok {
+		durable, ok = v.(bool)
+
+		if !ok {
+			return errors.New("durable option is of type bool")
+		}
+	}
+
+	if v, ok := opt["autoDelete"]; ok {
+		autoDelete, ok = v.(bool)
+
+		if !ok {
+			return errors.New("autoDelete option is of type bool")
+		}
+	}
+
+	if v, ok := opt["internal"]; ok {
+		internal, ok = v.(bool)
+
+		if !ok {
+			return errors.New("internal option is of type bool")
+		}
+	}
+
+	if v, ok := opt["noWait"]; ok {
+		noWait, ok = v.(bool)
+
+		if !ok {
+			return errors.New("noWait option is of type bool")
+		}
+	}
+
+	if v, ok := opt["args"]; ok {
+		args, ok = v.(amqp.Table)
+
+		if !ok {
+			return errors.New("args is of type amqp.Table")
+		}
+	}
+
+	return ch.Channel.ExchangeDeclare(name, kind, durable, autoDelete, internal, noWait, args)
 }
 
 func (ch *Channel) QueueBind(name, key, exchange string, noWait bool, args interface{}) error {

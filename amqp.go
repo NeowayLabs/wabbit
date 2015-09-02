@@ -3,6 +3,8 @@
 package amqputil
 
 type (
+	Option map[string]interface{}
+
 	Conn interface{
 		Channel() (Channel, error)
 		Dial(amqpuri string) error
@@ -16,7 +18,7 @@ type (
 		Reject(tag uint64, requeue bool) error
 
 		Cancel(consumer string, noWait bool) error 
-		ExchangeDeclare(name, kind string, durable, autoDelete, internal, noWait bool, args interface{}) error
+		ExchangeDeclare(name, kind string, opt Option) error
 		QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool, args interface{}) (Queue, error)
 		QueueBind(name, key, exchange string, noWait bool, args interface{}) error
 		Consume(queue, consumer string, autoAck, exclusive, noLocal, noWait bool, args interface{}) (<-chan Delivery, error)

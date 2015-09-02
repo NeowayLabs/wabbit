@@ -4,6 +4,8 @@ import (
 	"errors"
 	"sync"
 	"time"
+
+	"github.com/tiago4orion/amqputil"
 )
 
 const (
@@ -30,7 +32,9 @@ type Conn struct {
 }
 
 func New() *Conn {
-	return &Conn{}
+	return &Conn{
+		l: &sync.Mutex{},
+	}
 }
 
 // Dial mock the connection dialing to rabbitmq
@@ -98,8 +102,8 @@ func (conn *Conn) Close() error {
 	return nil
 }
 
-func (conn *Conn) Channel() *Channel {
-	return &Channel{}
+func (conn *Conn) Channel() (amqputil.Channel, error) {
+	return &Channel{}, nil
 }
 
 func StartRabbitmq() {
@@ -108,5 +112,8 @@ func StartRabbitmq() {
 
 func StopRabbitmq() {
 	Running = false
-	errChan <- errors.New("rabbitmq disconnected")
+
+	go func() {
+		errChan <- errors.New("rabbitmq disconnected")
+	}()
 }
