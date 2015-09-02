@@ -1,9 +1,9 @@
 package mock
 
 type Queue struct {
-	name string
+	name      string
 	consumers int
-	messages int
+	messages  int
 }
 
 func NewQueue(name string) *Queue {

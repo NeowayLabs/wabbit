@@ -32,7 +32,7 @@ func (ch *Channel) Publish(exc, route string, msg []byte) error {
 func (ch *Channel) Consume(queue, consumer string, opt amqputil.Option) (<-chan amqputil.Delivery, error) {
 	var (
 		autoAck, exclusive, noLocal, noWait bool
-		args amqp.Table
+		args                                amqp.Table
 	)
 
 	if v, ok := opt["autoAck"]; ok {
