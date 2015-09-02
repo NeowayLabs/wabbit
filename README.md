@@ -3,7 +3,7 @@
 AMQP is a verbose protocol that makes it difficult to implement proper unit-testing on your application.
 This package have an AMQP interface and two possible implementations:
 
-* RabbitMQ
+* RabbitMQ - Bypass to [streadway/amqp](https://github.com/streadway/amqp)
 * Mock
 
 You can use the mock implementation in your tests and use the rabbitmq implementation on your software. For example,
@@ -21,7 +21,7 @@ the code below:
   
   mock.StartRabbit()
   
-  err = mockConn.Dial(""amqp://localhost:5672/%2f") // now it works =D
+  err = mockConn.Dial("amqp://localhost:5672/%2f") // now it works =D
 ```
 
 It's a very straightforward implementation that need a lot of improvements yet. Take careful when using it.
