@@ -26,7 +26,7 @@ func (ch *Channel) Publish(exc, route string, msg []byte) error {
 	return nil
 }
 
-func (ch *Channel) Consume(queue, consumer string, autoAck, exclusive, noLocal, noWait bool, args interface{}) (<-chan amqputil.Delivery, error) {
+func (ch *Channel) Consume(queue, consumer string, opt amqputil.Option) (<-chan amqputil.Delivery, error) {
 	return nil, nil
 }
 
@@ -34,10 +34,10 @@ func (ch *Channel) ExchangeDeclare(name, kind string, opt amqputil.Option) error
 	return nil
 }
 
-func (ch *Channel) QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool, args interface{}) (amqputil.Queue, error) {
+func (ch *Channel) QueueDeclare(name string,  args amqputil.Option) (amqputil.Queue, error) {
 	return nil, nil
 }
 
-func (ch *Channel) QueueBind(name, key, exchange string, noWait bool, args interface{}) error {
+func (ch *Channel) QueueBind(name, key, exchange string, opt amqputil.Option) error {
 	return nil
 }

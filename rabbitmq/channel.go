@@ -29,8 +29,53 @@ func (ch *Channel) Publish(exc, route string, msg []byte) error {
 	)
 }
 
-func (ch *Channel) Consume(queue, consumer string, autoAck, exclusive, noLocal, noWait bool, args interface{}) (<-chan amqputil.Delivery, error) {
-	amqpd, err := ch.Channel.Consume(queue, consumer, autoAck, exclusive, noLocal, noWait, args.(amqp.Table))
+func (ch *Channel) Consume(queue, consumer string, opt amqputil.Option) (<-chan amqputil.Delivery, error) {
+	var (
+		autoAck, exclusive, noLocal, noWait bool
+		args amqp.Table
+	)
+
+	if v, ok := opt["autoAck"]; ok {
+		autoAck, ok = v.(bool)
+
+		if !ok {
+			return nil, errors.New("durable option is of type bool")
+		}
+	}
+
+	if v, ok := opt["exclusive"]; ok {
+		exclusive, ok = v.(bool)
+
+		if !ok {
+			return nil, errors.New("exclusive option is of type bool")
+		}
+	}
+
+	if v, ok := opt["noLocal"]; ok {
+		noLocal, ok = v.(bool)
+
+		if !ok {
+			return nil, errors.New("noLocal option is of type bool")
+		}
+	}
+
+	if v, ok := opt["noWait"]; ok {
+		noWait, ok = v.(bool)
+
+		if !ok {
+			return nil, errors.New("noWait option is of type bool")
+		}
+	}
+
+	if v, ok := opt["args"]; ok {
+		args, ok = v.(amqp.Table)
+
+		if !ok {
+			return nil, errors.New("args is of type amqp.Table")
+		}
+	}
+
+	amqpd, err := ch.Channel.Consume(queue, consumer, autoAck, exclusive, noLocal, noWait, args)
 
 	if err != nil {
 		return nil, err
@@ -42,6 +87,8 @@ func (ch *Channel) Consume(queue, consumer string, autoAck, exclusive, noLocal, 
 		for d := range amqpd {
 			deliveries <- &Delivery{&d}
 		}
+
+		close(deliveries)
 	}()
 
 	return deliveries, nil
@@ -96,12 +143,78 @@ func (ch *Channel) ExchangeDeclare(name, kind string, opt amqputil.Option) error
 	return ch.Channel.ExchangeDeclare(name, kind, durable, autoDelete, internal, noWait, args)
 }
 
-func (ch *Channel) QueueBind(name, key, exchange string, noWait bool, args interface{}) error {
-	return ch.Channel.QueueBind(name, key, exchange, noWait, args.(amqp.Table))
+func (ch *Channel) QueueBind(name, key, exchange string, opt amqputil.Option) error {
+	var (
+		noWait bool
+		args   amqp.Table
+	)
+
+	if v, ok := opt["noWait"]; ok {
+		noWait, ok = v.(bool)
+
+		if !ok {
+			return errors.New("noWait option is of type bool")
+		}
+	}
+
+	if v, ok := opt["args"]; ok {
+		args, ok = v.(amqp.Table)
+
+		if !ok {
+			return errors.New("args is of type amqp.Table")
+		}
+	}
+
+	return ch.Channel.QueueBind(name, key, exchange, noWait, args)
 }
 
-func (ch *Channel) QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool, args interface{}) (amqputil.Queue, error) {
-	q, err := ch.Channel.QueueDeclare(name, durable, autoDelete, exclusive, noWait, args.(amqp.Table))
+func (ch *Channel) QueueDeclare(name string, opt amqputil.Option) (amqputil.Queue, error) {
+	var (
+		durable, autoDelete, exclusive, noWait bool
+		args                                   amqp.Table
+	)
+
+	if v, ok := opt["durable"]; ok {
+		durable, ok = v.(bool)
+
+		if !ok {
+			return nil, errors.New("durable option is of type bool")
+		}
+	}
+
+	if v, ok := opt["autoDelete"]; ok {
+		autoDelete, ok = v.(bool)
+
+		if !ok {
+			return nil, errors.New("autoDelete option is of type bool")
+		}
+	}
+
+	if v, ok := opt["exclusive"]; ok {
+		exclusive, ok = v.(bool)
+
+		if !ok {
+			return nil, errors.New("Exclusive option is of type bool")
+		}
+	}
+
+	if v, ok := opt["noWait"]; ok {
+		noWait, ok = v.(bool)
+
+		if !ok {
+			return nil, errors.New("noWait option is of type bool")
+		}
+	}
+
+	if v, ok := opt["args"]; ok {
+		args, ok = v.(amqp.Table)
+
+		if !ok {
+			return nil, errors.New("args is of type amqp.Table")
+		}
+	}
+
+	q, err := ch.Channel.QueueDeclare(name, durable, autoDelete, exclusive, noWait, args)
 
 	if err != nil {
 		return nil, err

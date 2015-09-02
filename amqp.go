@@ -19,9 +19,9 @@ type (
 
 		Cancel(consumer string, noWait bool) error 
 		ExchangeDeclare(name, kind string, opt Option) error
-		QueueDeclare(name string, durable, autoDelete, exclusive, noWait bool, args interface{}) (Queue, error)
-		QueueBind(name, key, exchange string, noWait bool, args interface{}) error
-		Consume(queue, consumer string, autoAck, exclusive, noLocal, noWait bool, args interface{}) (<-chan Delivery, error)
+		QueueDeclare(name string, args Option) (Queue, error)
+		QueueBind(name, key, exchange string, opt Option) error
+		Consume(queue, consumer string, opt Option) (<-chan Delivery, error)
 		Publisher
 	}
 
