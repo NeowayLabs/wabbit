@@ -2,6 +2,7 @@ package mock
 
 import (
 	"runtime"
+	"sync"
 	"testing"
 	"time"
 
@@ -43,8 +44,7 @@ func TestDial(t *testing.T) {
 		return
 	}
 
-	StartRabbitmq()
-
+	StartServer()
 	err = waitRabbitOK("localhost")
 
 	if err != nil {
@@ -59,13 +59,13 @@ func TestDial(t *testing.T) {
 		return
 	}
 
-	StopRabbitmq()
+	StopServer()
 }
 
 func TestAutoRedial(t *testing.T) {
 	var err error
 
-	StartRabbitmq()
+	StartServer()
 
 	err = waitRabbitOK("localhost")
 
@@ -84,7 +84,12 @@ func TestAutoRedial(t *testing.T) {
 
 	var success = false
 	redialErrors := make(chan error)
+	mu := &sync.Mutex{}
+
 	conn.AutoRedial(redialErrors, func() {
+		mu.Lock()
+		defer mu.Unlock()
+
 		// this function should be executed if successfully reconnected
 		// here we can recover the application state after reconnect  (if needed)
 		success = true
@@ -98,22 +103,26 @@ func TestAutoRedial(t *testing.T) {
 		}
 	}()
 
-	StopRabbitmq()
+	StopServer()
 
 	// concurrently starts the rabbitmq after 1 second
 	go func() {
 		time.Sleep(1 * time.Second)
 
-		StartRabbitmq()
+		StartServer()
 	}()
 
 	// Wait 3 seconds to reconnect
 	for i := 0; i < 3; i++ {
 		runtime.Gosched()
+
+		mu.Lock()
 		if success {
+			mu.Unlock()
 			break
 		}
 
+		mu.Unlock()
 		time.Sleep(time.Second)
 	}
 
@@ -124,7 +133,7 @@ func TestAutoRedial(t *testing.T) {
 
 	conn.Close()
 
-	StopRabbitmq()
+	StopServer()
 }
 
 func TestChannelMock(t *testing.T) {
