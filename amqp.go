@@ -6,7 +6,6 @@ type (
 	// Option is a map of AMQP configurations
 	Option map[string]interface{}
 
-	// Conn is a amqp connection interface
 	Conn interface {
 		Channel() (Channel, error)
 		Dial(amqpuri string) error
