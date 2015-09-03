@@ -1,4 +1,4 @@
 
 
 check:
-	hack/check.sh
+	./hack/check.rc
