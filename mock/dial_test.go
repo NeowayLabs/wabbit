@@ -1,8 +1,7 @@
 package mock
 
 import (
-	"runtime"
-	"sync"
+	"errors"
 	"testing"
 	"time"
 
@@ -13,16 +12,16 @@ var rabbitmqPort = "35672"
 
 // WaitOK blocks until rabbitmq can accept connections on
 // <ctn ip address>:5672
-func waitRabbitOK(host string) error {
+func waitRabbitOK(amqpuri string) error {
 	var err error
 	var counter = 0
-	conn := New()
+	conn := NewConn()
 dial:
 	if counter > 120 {
 		panic("Impossible to connect to rabbitmq")
 	}
 
-	err = conn.Dial("amqp://guest:guest@" + host + ":" + rabbitmqPort + "/%2f")
+	err = conn.Dial(amqpuri)
 	if err != nil {
 		time.Sleep(500 * time.Millisecond)
 		counter++
@@ -35,65 +34,64 @@ dial:
 // TestDial test a simple connection to rabbitmq.
 // If the rabbitmq disconnects will not be tested here!
 func TestDial(t *testing.T) {
+	amqpuri := "amqp://guest:guest@localhost:35672/%2f"
+
 	// Should fail
-	conn := New()
-	err := conn.Dial("amqp://guest:guest@localhost:35672/%2f")
+	conn := NewConn()
+	err := conn.Dial(amqpuri)
 
 	if err == nil {
 		t.Error("No backend started... Should fail")
 		return
 	}
 
-	StartServer()
-	err = waitRabbitOK("localhost")
+	server := NewServer(amqpuri)
+	err = waitRabbitOK(amqpuri)
 
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	err = conn.Dial("amqp://guest:guest@localhost:35672/%2f")
+	err = conn.Dial(amqpuri)
 
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	StopServer()
+	server.Stop()
 }
 
 func TestAutoRedial(t *testing.T) {
 	var err error
 
-	StartServer()
+	amqpuri := "amqp://guest:guest@localhost:35672/%2f"
 
-	err = waitRabbitOK("localhost")
+	server := NewServer(amqpuri)
 
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	defer server.Stop()
 
-	conn := New()
-	err = conn.Dial("amqp://guest:guest@localhost:35672/%2f")
+	err = waitRabbitOK(amqpuri)
 
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	var success = false
+	conn := NewConn()
+	err = conn.Dial(amqpuri)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	defer conn.Close()
 	redialErrors := make(chan error)
-	mu := &sync.Mutex{}
 
-	conn.AutoRedial(redialErrors, func() {
-		mu.Lock()
-		defer mu.Unlock()
-
-		// this function should be executed if successfully reconnected
-		// here we can recover the application state after reconnect  (if needed)
-		success = true
-	})
+	done := make(chan bool)
+	conn.AutoRedial(redialErrors, done)
 
 	// required goroutine to consume connection error messages
 	go func() {
@@ -103,37 +101,25 @@ func TestAutoRedial(t *testing.T) {
 		}
 	}()
 
-	StopServer()
+	server.Stop()
 
 	// concurrently starts the rabbitmq after 1 second
 	go func() {
 		time.Sleep(1 * time.Second)
-
-		StartServer()
+		server.Start()
 	}()
 
-	// Wait 3 seconds to reconnect
-	for i := 0; i < 3; i++ {
-		runtime.Gosched()
-
-		mu.Lock()
-		if success {
-			mu.Unlock()
-			break
-		}
-
-		mu.Unlock()
-		time.Sleep(time.Second)
+	select {
+	case <-time.After(3 * time.Second):
+		err = errors.New("Timeout exceeded. AMQP reconnect failed")
+	case <-done:
+		err = nil
 	}
 
-	if success == false {
-		t.Errorf("Client doesn't reconnect in 3 seconds")
+	if err != nil {
+		t.Errorf("Client doesn't reconnect in 3 seconds: %s", err.Error())
 		return
 	}
-
-	conn.Close()
-
-	StopServer()
 }
 
 func TestChannelMock(t *testing.T) {
@@ -151,7 +137,7 @@ func TestConnMock(t *testing.T) {
 	var conn amqputil.Conn
 
 	// rabbitmq.Conn satisfies amqputil.Conn interface
-	conn = New()
+	conn = NewConn()
 
 	if conn == nil {
 		t.Error("Maybe amqputil.Conn interface does not mock amqp.Conn correctly")

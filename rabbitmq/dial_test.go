@@ -1,10 +1,9 @@
 package rabbitmq
 
 import (
+	"errors"
 	"fmt"
 	"os"
-	"runtime"
-	"sync"
 	"testing"
 	"time"
 
@@ -141,17 +140,9 @@ func TestAutoRedial(t *testing.T) {
 		return
 	}
 
-	mu := &sync.Mutex{}
-	var success = false
-
 	redialErrors := make(chan error)
-	conn.AutoRedial(redialErrors, func() {
-		// this function should be executed if successfully reconnected
-		// here we can recover the application state after reconnect  (if needed)
-		mu.Lock()
-		success = true
-		mu.Unlock()
-	})
+	done := make(chan bool)
+	conn.AutoRedial(redialErrors, done)
 
 	// required goroutine to consume connection error messages
 	go func() {
@@ -175,31 +166,19 @@ func TestAutoRedial(t *testing.T) {
 		}
 	}()
 
-	// Wait 3 seconds to reconnect
-	for i := 0; i < 3; i++ {
-		runtime.Gosched()
-		mu.Lock()
-		if success {
-			mu.Unlock()
-			break
-		}
-
-		mu.Unlock()
-
-		time.Sleep(time.Second)
+	select {
+	case <-time.After(3 * time.Second):
+		err = errors.New("Failed to reconnect. Timeout exceeded")
+	case <-done:
+		err = nil
 	}
 
-	mu.Lock()
-	if success == false {
-		mu.Unlock()
-		t.Errorf("Client doesn't reconnect in 3 seconds")
+	if err != nil {
+		t.Errorf("Client doesn't reconnect in 3 seconds: %s", err.Error())
 		return
 	}
 
-	mu.Unlock()
-
 	conn.Close()
-
 	dockerClient.Remove(rabbitmqCtnName)
 }
 

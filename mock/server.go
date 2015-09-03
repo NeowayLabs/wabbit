@@ -24,22 +24,27 @@ type AMQPServer struct {
 }
 
 // NewServer returns a new fake amqp server
-func newServer() *AMQPServer {
+func newServer(amqpuri string) *AMQPServer {
 	return &AMQPServer{
-		mu: &sync.Mutex{},
+		mu:      &sync.Mutex{},
+		amqpuri: amqpuri,
 	}
 }
 
 // Start a new AMQP server fake-listening on host:port
-func (s *AMQPServer) Start(amqpuri string) error {
-	s.amqpuri = amqpuri
-	s.running = true
+func (s *AMQPServer) Start() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
+	s.running = true
 	return nil
 }
 
 // Stop the fake server
 func (s *AMQPServer) Stop() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	s.running = false
 	return nil
 }

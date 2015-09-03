@@ -1,7 +1,6 @@
 package mock
 
 import (
-	"errors"
 	"sync"
 	"time"
 
@@ -13,56 +12,48 @@ const (
 	defaultReconnectDelay = 1
 )
 
-var (
-	defConn *Conn
-)
-
-func init() {
-	defConn = newConn()
-}
-
 // Conn is the fake AMQP connection
 type Conn struct {
-	running       bool
 	isConnected   bool
 	errChan       chan error
 	mu            *sync.Mutex
 	hasAutoRedial bool
+	amqpServer    *AMQPServer
 
 	dialFn func() error
 }
 
-func newConn() *Conn {
+// NewConn creates a new fake connection
+func NewConn() *Conn {
 	return &Conn{
 		errChan: make(chan error),
 		mu:      &sync.Mutex{},
 	}
 }
 
-// New creates the fake conn
-func New() *Conn {
-	return defConn
-}
-
 // Dial mock the connection dialing to rabbitmq
 func (conn *Conn) Dial(amqpuri string) error {
 	conn.dialFn = func() error {
-		conn.mu.Lock()
-		defer conn.mu.Unlock()
+		var err error
 
-		if conn.running {
-			conn.isConnected = true
-			return nil
+		conn.amqpServer, err = connect(amqpuri)
+
+		if err != nil {
+			return err
 		}
 
-		return errors.New("Failed to connect to '" + amqpuri + "'")
+		// concurrent access with Close method
+		conn.mu.Lock()
+		conn.isConnected = true
+		conn.mu.Unlock()
+		return nil
 	}
 
 	return conn.dialFn()
 }
 
 // AutoRedial mock the reconnection faking a delay of 1 second
-func (conn *Conn) AutoRedial(outChan chan error, onSuccess func()) {
+func (conn *Conn) AutoRedial(outChan chan error, done chan bool) {
 	conn.mu.Lock()
 	conn.hasAutoRedial = true
 	conn.mu.Unlock()
@@ -99,8 +90,8 @@ func (conn *Conn) AutoRedial(outChan chan error, onSuccess func()) {
 			attempts = 0
 
 			// enabled AutoRedial on the new connection
-			conn.AutoRedial(outChan, onSuccess)
-			onSuccess()
+			conn.AutoRedial(outChan, done)
+			done <- true
 			return
 		}
 	}(conn.errChan)
@@ -112,42 +103,17 @@ func (conn *Conn) Close() error {
 	defer conn.mu.Unlock()
 
 	conn.isConnected = false
+	conn.amqpServer = nil
 	// enables AutoRedial to gracefully shutdown
 	// This isn't amqputil stuff. It's the streadway/amqp way of notify the shutdown
-	conn.errChan <- nil
+	if conn.hasAutoRedial {
+		conn.errChan <- nil
+	}
+
 	return nil
 }
 
 // Channel creates a new fake channel
 func (conn *Conn) Channel() (amqputil.Channel, error) {
 	return &Channel{}, nil
-}
-
-// StopServer stops the fake server
-func (conn *Conn) StopServer() {
-	conn.mu.Lock()
-	defer conn.mu.Unlock()
-	conn.running = false
-}
-
-// StartServer stops the fake server
-func (conn *Conn) StartServer() {
-	conn.mu.Lock()
-	defer conn.mu.Unlock()
-	conn.running = true
-
-	// avoid deadlock
-	if conn.hasAutoRedial {
-		conn.errChan <- errors.New("rabbitmq disconnected")
-	}
-}
-
-// StartRabbitmq starts the fake AMQP server
-func StartServer() {
-	defConn.StartServer()
-}
-
-// StopRabbitmq stop the fake AMQP server
-func StopServer() {
-	defConn.StopServer()
 }

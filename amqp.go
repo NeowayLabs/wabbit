@@ -9,7 +9,7 @@ type (
 	Conn interface {
 		Channel() (Channel, error)
 		Dial(amqpuri string) error
-		AutoRedial(errChan chan error, cbk func())
+		AutoRedial(errChan chan error, done chan bool)
 		Close() error
 	}
 

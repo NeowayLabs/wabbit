@@ -41,8 +41,7 @@ func (conn *Conn) Dial(uri string) error {
 
 // AutoRedial manages the automatic redial of connection when unexpected closed.
 // outChan is an unbuffered channel required to receive the errors that results from
-// attempts of reconnect. On successfully reconnected, the function onSuccess
-// is invoked.
+// attempts of reconnect. On successfully reconnected, the true value is sent to done channel
 //
 // The outChan parameter can receive *amqp.Error for AMQP connection errors
 // or errors.Error for any other net/tcp internal error.
@@ -52,7 +51,7 @@ func (conn *Conn) Dial(uri string) error {
 // AutoRedial will try to automatically reconnect waiting for N seconds before each
 // attempt, where N is the number of attempts of reconnecting. If the number of
 // attempts reach 60, it will be zero'ed.
-func (conn *Conn) AutoRedial(outChan chan error, onSuccess func()) {
+func (conn *Conn) AutoRedial(outChan chan error, done chan bool) {
 	errChan := conn.NotifyClose(make(chan *amqp.Error))
 
 	go func() {
@@ -86,8 +85,8 @@ func (conn *Conn) AutoRedial(outChan chan error, onSuccess func()) {
 			conn.attempts = 0
 
 			// enabled AutoRedial on the new connection
-			conn.AutoRedial(outChan, onSuccess)
-			onSuccess()
+			conn.AutoRedial(outChan, done)
+			done <- true
 			return
 		}
 	}()
