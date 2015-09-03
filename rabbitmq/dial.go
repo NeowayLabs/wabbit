@@ -93,6 +93,7 @@ func (conn *Conn) AutoRedial(outChan chan error, onSuccess func()) {
 	}()
 }
 
+// Channel returns a new channel ready to be used
 func (conn *Conn) Channel() (amqputil.Channel, error) {
 	ch, err := conn.Connection.Channel()
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"sync"
 	"testing"
 	"time"
 
@@ -63,10 +64,16 @@ func TestMain(m *testing.M) {
 // <ctn ip address>:5672
 func waitRabbitOK(host string) error {
 	var err error
+	var counter uint
 	conn := New()
 dial:
 	err = conn.Dial("amqp://guest:guest@" + host + ":" + rabbitmqPort + "/%2f")
 	if err != nil {
+		if counter >= 120 {
+			panic("isn't possible to connect on rabbitmq")
+		}
+
+		counter++
 		fmt.Printf("Failed to connect to rabbitmq: %s\n", err.Error())
 		time.Sleep(500 * time.Millisecond)
 		goto dial
@@ -134,12 +141,16 @@ func TestAutoRedial(t *testing.T) {
 		return
 	}
 
+	mu := &sync.Mutex{}
 	var success = false
+
 	redialErrors := make(chan error)
 	conn.AutoRedial(redialErrors, func() {
 		// this function should be executed if successfully reconnected
 		// here we can recover the application state after reconnect  (if needed)
+		mu.Lock()
 		success = true
+		mu.Unlock()
 	})
 
 	// required goroutine to consume connection error messages
@@ -167,17 +178,25 @@ func TestAutoRedial(t *testing.T) {
 	// Wait 3 seconds to reconnect
 	for i := 0; i < 3; i++ {
 		runtime.Gosched()
+		mu.Lock()
 		if success {
+			mu.Unlock()
 			break
 		}
+
+		mu.Unlock()
 
 		time.Sleep(time.Second)
 	}
 
+	mu.Lock()
 	if success == false {
+		mu.Unlock()
 		t.Errorf("Client doesn't reconnect in 3 seconds")
 		return
 	}
+
+	mu.Unlock()
 
 	conn.Close()
 
