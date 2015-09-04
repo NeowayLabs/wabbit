@@ -29,7 +29,7 @@ fi
 for dir in $(find "$TEST_DIRECTORY" -maxdepth 10 -not -path './.git*' -not -path './Godeps/*' -type d);
 do
     if ls $dir/*.go &> /dev/null; then
-	$GO test  -v -race -covermode=count -coverprofile="$dir/profile.tmp" "$dir"
+	$GO test  -v -race -covermode=atomic -coverprofile="$dir/profile.tmp" "$dir"
 	if [ -f $dir/profile.tmp ]
 	then
             cat $dir/profile.tmp | tail -n +2 >> coverage.txt
