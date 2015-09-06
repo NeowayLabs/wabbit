@@ -32,8 +32,9 @@ type Conn struct {
 // NewConn creates a new fake connection
 func NewConn() *Conn {
 	return &Conn{
-		errChan: make(chan error),
-		mu:      &sync.Mutex{},
+		errChan:    make(chan error),
+		defErrDone: make(chan bool),
+		mu:         &sync.Mutex{},
 	}
 }
 
@@ -74,18 +75,19 @@ func (conn *Conn) Dial(amqpuri string) error {
 
 // AutoRedial mock the reconnection faking a delay of 1 second
 func (conn *Conn) AutoRedial(outChan chan error, done chan bool) {
-	conn.mu.Lock()
-	conn.hasAutoRedial = true
-	conn.mu.Unlock()
+	if !conn.hasAutoRedial {
+		conn.defErrDone <- true
+		conn.mu.Lock()
+		conn.hasAutoRedial = true
+		conn.mu.Unlock()
+	}
 
-	conn.defErrDone <- true
-
-	go func(errChan <-chan error) {
+	go func() {
 		var err error
 		var attempts uint
 
 		select {
-		case amqpErr := <-errChan:
+		case amqpErr := <-conn.errChan:
 			err = amqpErr
 
 			if amqpErr == nil {
@@ -94,6 +96,8 @@ func (conn *Conn) AutoRedial(outChan chan error, done chan bool) {
 			}
 		lattempts:
 			fmt.Printf("Reconnecting....%s\n", amqpErr)
+
+			// send the error to client
 			outChan <- err
 
 			if attempts > 60 {
@@ -117,7 +121,7 @@ func (conn *Conn) AutoRedial(outChan chan error, done chan bool) {
 			done <- true
 			return
 		}
-	}(conn.errChan)
+	}()
 }
 
 // Close the fake connection
@@ -127,10 +131,13 @@ func (conn *Conn) Close() error {
 
 	conn.isConnected = false
 	conn.amqpServer = nil
+
 	// enables AutoRedial to gracefully shutdown
 	// This isn't amqputil stuff. It's the streadway/amqp way of notify the shutdown
 	if conn.hasAutoRedial {
 		conn.errChan <- nil
+	} else {
+		conn.defErrDone <- true
 	}
 
 	return nil
