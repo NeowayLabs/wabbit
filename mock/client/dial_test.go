@@ -1,4 +1,4 @@
-package mock
+package client
 
 import (
 	"errors"
@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/tiago4orion/amqputil"
+	"github.com/tiago4orion/amqputil/mock/server"
 )
 
 var rabbitmqPort = "35672"
@@ -45,7 +46,7 @@ func TestDial(t *testing.T) {
 		return
 	}
 
-	server := NewServer(amqpuri)
+	server := server.NewServer(amqpuri)
 	err = waitRabbitOK(amqpuri)
 
 	if err != nil {
@@ -68,7 +69,7 @@ func TestAutoRedial(t *testing.T) {
 
 	amqpuri := "amqp://guest:guest@localhost:35672/%2f"
 
-	server := NewServer(amqpuri)
+	server := server.NewServer(amqpuri)
 
 	defer server.Stop()
 

@@ -1,4 +1,4 @@
-package mock
+package client
 
 import "github.com/tiago4orion/amqputil"
 

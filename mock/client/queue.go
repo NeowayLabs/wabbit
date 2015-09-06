@@ -1,4 +1,4 @@
-package mock
+package client
 
 type Queue struct {
 	name      string

@@ -1,5 +1,5 @@
 // Package amqputil provides some abstractions for AMQP for easy the testing.
-// The best way to test
+// The best way to test third-party libraries in Go is using interfaces
 package amqputil
 
 type (
@@ -14,7 +14,7 @@ type (
 		Close() error
 	}
 
-	// Channel is a AMQP channel interface
+	// Channel is an AMQP channel interface
 	Channel interface {
 		Ack(tag uint64, multiple bool) error
 		Nack(tag uint64, multiple bool, requeue bool) error

@@ -23,4 +23,3 @@ after_success:
 notifications:
   email:
     - tiago.natel@neoway.com.br
-    - tiagokatcipis@gmail.com

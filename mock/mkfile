@@ -1,4 +1,0 @@
-
-
-check:
-	hack/check.sh

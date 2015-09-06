@@ -1,4 +1,4 @@
-package mock
+package server
 
 import (
 	"errors"
@@ -16,18 +16,23 @@ func init() {
 	mu = &sync.Mutex{}
 }
 
-// AMQPServer is a fake AMQP server
+// AMQPServer is a fake AMQP server. It handle the fake TCP connection
 type AMQPServer struct {
 	mu      *sync.Mutex
 	running bool
 	amqpuri string
+
+	vhost       VHost
+	notifyChans map[string]chan error
 }
 
 // NewServer returns a new fake amqp server
 func newServer(amqpuri string) *AMQPServer {
 	return &AMQPServer{
-		mu:      &sync.Mutex{},
-		amqpuri: amqpuri,
+		mu:          &sync.Mutex{},
+		amqpuri:     amqpuri,
+		notifyChans: make(map[string]chan error),
+		vhost:       NewVHost("/"),
 	}
 }
 
@@ -46,6 +51,11 @@ func (s *AMQPServer) Stop() error {
 	defer s.mu.Unlock()
 
 	s.running = false
+
+	for _, c := range s.notifyChans {
+		c <- errors.New("Connection lost")
+	}
+
 	return nil
 }
 
@@ -65,7 +75,15 @@ func NewServer(amqpuri string) *AMQPServer {
 	return amqpServer
 }
 
-func connect(amqpuri string) (*AMQPServer, error) {
+func (s *AMQPServer) addNotify(connID string, nchan chan error) {
+	s.notifyChans[connID] = nchan
+}
+
+func (s *AMQPServer) delNotify(connID string) {
+	delete(s.notifyChans, connID)
+}
+
+func getServer(amqpuri string) (*AMQPServer, error) {
 	mu.Lock()
 	defer mu.Unlock()
 
@@ -76,4 +94,26 @@ func connect(amqpuri string) (*AMQPServer, error) {
 	}
 
 	return amqpServer, nil
+}
+
+func Connect(amqpuri string, connID string, nchan chan error) (*AMQPServer, error) {
+	amqpServer, err := getServer(amqpuri)
+
+	if err != nil {
+		return nil, err
+	}
+
+	amqpServer.addNotify(connID, nchan)
+	return amqpServer, nil
+}
+
+func Close(amqpuri string, connID string) error {
+	amqpServer, err := getServer(amqpuri)
+
+	if err != nil {
+		return errors.New("Failed to close connection")
+	}
+
+	amqpServer.delNotify(connID)
+	return nil
 }

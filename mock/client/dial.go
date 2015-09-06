@@ -1,10 +1,14 @@
-package mock
+package client
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
+	"code.google.com/p/go-uuid/uuid"
+
 	"github.com/tiago4orion/amqputil"
+	"github.com/tiago4orion/amqputil/mock/server"
 )
 
 const (
@@ -15,10 +19,12 @@ const (
 // Conn is the fake AMQP connection
 type Conn struct {
 	isConnected   bool
+	connID        string
 	errChan       chan error
+	defErrDone    chan bool
 	mu            *sync.Mutex
 	hasAutoRedial bool
-	amqpServer    *AMQPServer
+	amqpServer    *server.AMQPServer
 
 	dialFn func() error
 }
@@ -35,8 +41,8 @@ func NewConn() *Conn {
 func (conn *Conn) Dial(amqpuri string) error {
 	conn.dialFn = func() error {
 		var err error
-
-		conn.amqpServer, err = connect(amqpuri)
+		conn.connID = uuid.New()
+		conn.amqpServer, err = server.Connect(amqpuri, conn.connID, conn.errChan)
 
 		if err != nil {
 			return err
@@ -46,6 +52,20 @@ func (conn *Conn) Dial(amqpuri string) error {
 		conn.mu.Lock()
 		conn.isConnected = true
 		conn.mu.Unlock()
+
+		// by default, we discard any errors
+		// send something to defErrDone to destroy
+		// this goroutine and start consume the errors
+		go func() {
+			for {
+				select {
+				case <-conn.errChan:
+				case <-conn.defErrDone:
+					return
+				}
+			}
+		}()
+
 		return nil
 	}
 
@@ -57,6 +77,8 @@ func (conn *Conn) AutoRedial(outChan chan error, done chan bool) {
 	conn.mu.Lock()
 	conn.hasAutoRedial = true
 	conn.mu.Unlock()
+
+	conn.defErrDone <- true
 
 	go func(errChan <-chan error) {
 		var err error
@@ -71,6 +93,7 @@ func (conn *Conn) AutoRedial(outChan chan error, done chan bool) {
 				return
 			}
 		lattempts:
+			fmt.Printf("Reconnecting....%s\n", amqpErr)
 			outChan <- err
 
 			if attempts > 60 {
