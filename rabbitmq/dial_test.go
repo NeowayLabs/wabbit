@@ -73,7 +73,6 @@ dial:
 		}
 
 		counter++
-		fmt.Printf("Failed to connect to rabbitmq: %s\n", err.Error())
 		time.Sleep(500 * time.Millisecond)
 		goto dial
 	}
@@ -167,7 +166,7 @@ func TestAutoRedial(t *testing.T) {
 	}()
 
 	select {
-	case <-time.After(3 * time.Second):
+	case <-time.After(5 * time.Second):
 		err = errors.New("Failed to reconnect. Timeout exceeded")
 	case <-done:
 		err = nil

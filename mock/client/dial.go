@@ -1,7 +1,6 @@
 package client
 
 import (
-	"fmt"
 	"sync"
 	"time"
 
@@ -95,8 +94,6 @@ func (conn *Conn) AutoRedial(outChan chan error, done chan bool) {
 				return
 			}
 		lattempts:
-			fmt.Printf("Reconnecting....%s\n", amqpErr)
-
 			// send the error to client
 			outChan <- err
 
@@ -145,5 +142,5 @@ func (conn *Conn) Close() error {
 
 // Channel creates a new fake channel
 func (conn *Conn) Channel() (amqputil.Channel, error) {
-	return &Channel{}, nil
+	return conn.amqpServer.CreateChannel()
 }

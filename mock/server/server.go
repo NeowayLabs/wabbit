@@ -3,6 +3,8 @@ package server
 import (
 	"errors"
 	"sync"
+
+	"github.com/tiago4orion/amqputil"
 )
 
 var (
@@ -22,7 +24,7 @@ type AMQPServer struct {
 	running bool
 	amqpuri string
 
-	vhost       VHost
+	vhost       *VHost
 	notifyChans map[string]chan error
 }
 
@@ -34,6 +36,10 @@ func newServer(amqpuri string) *AMQPServer {
 		notifyChans: make(map[string]chan error),
 		vhost:       NewVHost("/"),
 	}
+}
+
+func (s *AMQPServer) CreateChannel() (amqputil.Channel, error) {
+	return s.vhost, nil
 }
 
 // Start a new AMQP server fake-listening on host:port
@@ -76,10 +82,14 @@ func NewServer(amqpuri string) *AMQPServer {
 }
 
 func (s *AMQPServer) addNotify(connID string, nchan chan error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	s.notifyChans[connID] = nchan
 }
 
 func (s *AMQPServer) delNotify(connID string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	delete(s.notifyChans, connID)
 }
 

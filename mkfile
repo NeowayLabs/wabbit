@@ -2,3 +2,4 @@
 
 check:
 	./hack/check.rc
+
