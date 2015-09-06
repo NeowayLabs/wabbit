@@ -10,7 +10,16 @@ You can use the mock implementation in your tests and use the rabbitmq implement
 the code below:
 
 ```go
-  mockConn := mock.Conn()       // amqputil.Conn interface
+  import (
+	mockClient "github.com/tiago4orion/amqputil/mock/client"
+	mockServer "github.com/tiago4orion/amqputil/mock/server"
+	"github.com/tiago4orion/amqputil/rabbitmq"
+  )
+
+  ...
+
+
+  mockConn := mockClient.Conn()       // amqputil.Conn interface
   realConn := rabbitmq.Conn()   // amqputil.Conn interface
   
   err := mockConn.Dial("amqp://localhost:5672/%2f") // will fail
@@ -19,7 +28,8 @@ the code below:
     panic(err)
   }
   
-  mock.StartRabbit()
+  fakeServer := mock.NewServer("amqp://localhost:5672/%2f")
+  fakeServer.Start()
   
   err = mockConn.Dial("amqp://localhost:5672/%2f") // now it works =D
 ```
