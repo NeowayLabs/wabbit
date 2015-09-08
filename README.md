@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.org/tiago4orion/amqputil.svg?branch=master)](https://travis-ci.org/tiago4orion/amqputil) [![codecov.io](http://codecov.io/github/tiago4orion/amqputil/coverage.svg?branch=master)](http://codecov.io/github/tiago4orion/amqputil?branch=master)
+[![Build Status](https://travis-ci.org/tiago4orion/amqputil.svg?branch=master)](https://travis-ci.org/tiago4orion/amqputil) [![codecov.io](http://codecov.io/github/tiago4orion/wabbit/coverage.svg?branch=master)](http://codecov.io/github/tiago4orion/wabbit?branch=master)
+
 
 # wabbit
 
