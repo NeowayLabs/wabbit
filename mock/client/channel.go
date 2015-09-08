@@ -22,7 +22,7 @@ func (ch *Channel) Cancel(consumer string, noWait bool) error {
 	return nil
 }
 
-func (ch *Channel) Publish(exc, route string, msg []byte) error {
+func (ch *Channel) Publish(exc, route string, msg []byte, opt amqputil.Option) error {
 	return nil
 }
 

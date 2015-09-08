@@ -37,7 +37,7 @@ type (
 
 	// Publisher is an interface to something able to publish messages
 	Publisher interface {
-		Publish(exc, route string, msg []byte) error
+		Publish(exc, route string, msg []byte, opt Option) error
 	}
 
 	// Delivery is an interface to delivered messages

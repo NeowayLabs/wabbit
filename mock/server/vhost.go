@@ -115,7 +115,7 @@ func (v *VHost) Consume(queue, consumer string, opt amqputil.Option) (<-chan amq
 	return q.data, nil
 }
 
-func (v *VHost) Publish(exc, route string, msg []byte) error {
+func (v *VHost) Publish(exc, route string, msg []byte, _ amqputil.Option) error {
 	var (
 		exch Exchange
 		ok   bool
