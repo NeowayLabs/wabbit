@@ -1,8 +1,10 @@
 package server
 
+import "github.com/tiago4orion/amqputil"
+
 type Queue struct {
 	name string
-	data chan []byte
+	data chan amqputil.Delivery
 }
 
 func (q *Queue) Consumers() int {

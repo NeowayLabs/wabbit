@@ -1,12 +1,16 @@
 package server
 
-import "github.com/tiago4orion/amqputil"
+import (
+	"fmt"
+
+	"github.com/tiago4orion/amqputil"
+)
 
 // VHost is a fake AMQP virtual host
 type VHost struct {
 	name      string
 	exchanges map[string]Exchange
-	queues    map[string]Queue
+	queues    map[string]*Queue
 }
 
 type Channel VHost
@@ -14,8 +18,9 @@ type Channel VHost
 // NewVHost create a new fake AMQP Virtual Host
 func NewVHost(name string) *VHost {
 	vh := VHost{
-		name:   name,
-		queues: make(map[string]Queue),
+		name:      name,
+		queues:    make(map[string]*Queue),
+		exchanges: make(map[string]Exchange),
 	}
 
 	vh.createDefaultExchanges()
@@ -49,17 +54,58 @@ func (v *VHost) ExchangeDeclare(name, kind string, opt amqputil.Option) error {
 }
 
 func (v *VHost) QueueDeclare(name string, args amqputil.Option) (amqputil.Queue, error) {
-	return &Queue{}, nil
+	q := &Queue{}
+	v.queues[name] = q
+	return q, nil
 }
 
 func (v *VHost) QueueBind(name, key, exchange string, opt amqputil.Option) error {
+	var (
+		exch Exchange
+		q    *Queue
+		ok   bool
+	)
+
+	if exch, ok = v.exchanges[exchange]; !ok {
+		return fmt.Errorf("Unknown exchange '%s'", exchange)
+	}
+
+	if q, ok = v.queues[name]; !ok {
+		return fmt.Errorf("Unknown queue '%s'", name)
+	}
+
+	exch.addBinding(key, q)
 	return nil
 }
 
 func (v *VHost) Consume(queue, consumer string, opt amqputil.Option) (<-chan amqputil.Delivery, error) {
-	return nil, nil
+	q, ok := v.queues[queue]
+
+	if !ok {
+		return nil, fmt.Errorf("Unknown queue '%s'", queue)
+	}
+
+	return q.data, nil
 }
 
 func (v *VHost) Publish(exc, route string, msg []byte) error {
+	var (
+		exch Exchange
+		ok   bool
+		q    *Queue
+		err  error
+	)
+
+	if exch, ok = v.exchanges[exc]; !ok {
+		return fmt.Errorf("Unknow exchange '%s'", exc)
+	}
+
+	q, err = exch.route(route, msg)
+
+	if err != nil {
+		return err
+	}
+
+	q.data <- NewDelivery(msg)
 	return nil
 }
