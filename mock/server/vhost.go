@@ -3,7 +3,7 @@ package server
 import (
 	"fmt"
 
-	"github.com/tiago4orion/amqputil"
+	"github.com/tiago4orion/wabbit"
 )
 
 // VHost is a fake AMQP virtual host
@@ -54,7 +54,7 @@ func (v *VHost) Cancel(consumer string, noWait bool) error {
 	return nil
 }
 
-func (v *VHost) ExchangeDeclare(name, kind string, opt amqputil.Option) error {
+func (v *VHost) ExchangeDeclare(name, kind string, opt wabbit.Option) error {
 	if _, ok := v.exchanges[name]; ok {
 		// TODO: We need review this. If the application is trying to re-create an exchange
 		// using other options we shall not return NIL because this indicates success,
@@ -77,14 +77,14 @@ func (v *VHost) ExchangeDeclare(name, kind string, opt amqputil.Option) error {
 	return nil
 }
 
-func (v *VHost) QueueDeclare(name string, args amqputil.Option) (amqputil.Queue, error) {
+func (v *VHost) QueueDeclare(name string, args wabbit.Option) (wabbit.Queue, error) {
 	q := NewQueue(name)
 
 	v.queues[name] = q
 	return q, nil
 }
 
-func (v *VHost) QueueBind(name, key, exchange string, _ amqputil.Option) error {
+func (v *VHost) QueueBind(name, key, exchange string, _ wabbit.Option) error {
 	var (
 		exch Exchange
 		q    *Queue
@@ -103,7 +103,7 @@ func (v *VHost) QueueBind(name, key, exchange string, _ amqputil.Option) error {
 	return nil
 }
 
-func (v *VHost) Consume(queue, consumer string, opt amqputil.Option) (<-chan amqputil.Delivery, error) {
+func (v *VHost) Consume(queue, consumer string, opt wabbit.Option) (<-chan wabbit.Delivery, error) {
 	q, ok := v.queues[queue]
 
 	if !ok {
@@ -113,7 +113,7 @@ func (v *VHost) Consume(queue, consumer string, opt amqputil.Option) (<-chan amq
 	return q.data, nil
 }
 
-func (v *VHost) Publish(exc, route string, msg []byte, _ amqputil.Option) error {
+func (v *VHost) Publish(exc, route string, msg []byte, _ wabbit.Option) error {
 	var (
 		exch Exchange
 		ok   bool

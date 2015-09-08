@@ -1,6 +1,6 @@
 package server
 
-import "github.com/tiago4orion/amqputil"
+import "github.com/tiago4orion/wabbit"
 
 const (
 	QueueMaxLen = 2 << 8
@@ -8,13 +8,13 @@ const (
 
 type Queue struct {
 	name string
-	data chan amqputil.Delivery
+	data chan wabbit.Delivery
 }
 
 func NewQueue(name string) *Queue {
 	return &Queue{
 		name: name,
-		data: make(chan amqputil.Delivery, QueueMaxLen),
+		data: make(chan wabbit.Delivery, QueueMaxLen),
 	}
 }
 

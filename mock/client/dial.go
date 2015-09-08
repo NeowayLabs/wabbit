@@ -6,8 +6,8 @@ import (
 
 	"code.google.com/p/go-uuid/uuid"
 
-	"github.com/tiago4orion/amqputil"
-	"github.com/tiago4orion/amqputil/mock/server"
+	"github.com/tiago4orion/wabbit"
+	"github.com/tiago4orion/wabbit/mock/server"
 )
 
 const (
@@ -130,7 +130,7 @@ func (conn *Conn) Close() error {
 	conn.amqpServer = nil
 
 	// enables AutoRedial to gracefully shutdown
-	// This isn't amqputil stuff. It's the streadway/amqp way of notify the shutdown
+	// This isn't wabbit stuff. It's the streadway/amqp way of notify the shutdown
 	if conn.hasAutoRedial {
 		conn.errChan <- nil
 	} else {
@@ -141,6 +141,6 @@ func (conn *Conn) Close() error {
 }
 
 // Channel creates a new fake channel
-func (conn *Conn) Channel() (amqputil.Channel, error) {
+func (conn *Conn) Channel() (wabbit.Channel, error) {
 	return conn.amqpServer.CreateChannel()
 }

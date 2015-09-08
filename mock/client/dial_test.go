@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tiago4orion/amqputil"
-	"github.com/tiago4orion/amqputil/mock/server"
+	"github.com/tiago4orion/wabbit"
+	"github.com/tiago4orion/wabbit/mock/server"
 )
 
 var rabbitmqPort = "35672"
@@ -124,23 +124,23 @@ func TestAutoRedial(t *testing.T) {
 }
 
 func TestChannelMock(t *testing.T) {
-	var channel amqputil.Channel
+	var channel wabbit.Channel
 
-	// rabbitmq.Channel satisfies amqputil.Channel interface
+	// rabbitmq.Channel satisfies wabbit.Channel interface
 	channel = new(Channel)
 
 	if channel == nil {
-		t.Error("Maybe amqputil.Channel interface does not mock amqp.Channel correctly")
+		t.Error("Maybe wabbit.Channel interface does not mock amqp.Channel correctly")
 	}
 }
 
 func TestConnMock(t *testing.T) {
-	var conn amqputil.Conn
+	var conn wabbit.Conn
 
-	// rabbitmq.Conn satisfies amqputil.Conn interface
+	// rabbitmq.Conn satisfies wabbit.Conn interface
 	conn = NewConn()
 
 	if conn == nil {
-		t.Error("Maybe amqputil.Conn interface does not mock amqp.Conn correctly")
+		t.Error("Maybe wabbit.Conn interface does not mock amqp.Conn correctly")
 	}
 }

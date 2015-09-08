@@ -4,7 +4,7 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/tiago4orion/amqputil"
+	"github.com/tiago4orion/wabbit"
 )
 
 var (
@@ -38,7 +38,7 @@ func newServer(amqpuri string) *AMQPServer {
 	}
 }
 
-func (s *AMQPServer) CreateChannel() (amqputil.Channel, error) {
+func (s *AMQPServer) CreateChannel() (wabbit.Channel, error) {
 	return s.vhost, nil
 }
 

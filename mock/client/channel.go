@@ -1,6 +1,6 @@
 package client
 
-import "github.com/tiago4orion/amqputil"
+import "github.com/tiago4orion/wabbit"
 
 type (
 	Channel struct{}
@@ -22,22 +22,22 @@ func (ch *Channel) Cancel(consumer string, noWait bool) error {
 	return nil
 }
 
-func (ch *Channel) Publish(exc, route string, msg []byte, opt amqputil.Option) error {
+func (ch *Channel) Publish(exc, route string, msg []byte, opt wabbit.Option) error {
 	return nil
 }
 
-func (ch *Channel) Consume(queue, consumer string, opt amqputil.Option) (<-chan amqputil.Delivery, error) {
+func (ch *Channel) Consume(queue, consumer string, opt wabbit.Option) (<-chan wabbit.Delivery, error) {
 	return nil, nil
 }
 
-func (ch *Channel) ExchangeDeclare(name, kind string, opt amqputil.Option) error {
+func (ch *Channel) ExchangeDeclare(name, kind string, opt wabbit.Option) error {
 	return nil
 }
 
-func (ch *Channel) QueueDeclare(name string, args amqputil.Option) (amqputil.Queue, error) {
+func (ch *Channel) QueueDeclare(name string, args wabbit.Option) (wabbit.Queue, error) {
 	return NewQueue(name), nil
 }
 
-func (ch *Channel) QueueBind(name, key, exchange string, opt amqputil.Option) error {
+func (ch *Channel) QueueBind(name, key, exchange string, opt wabbit.Option) error {
 	return nil
 }

@@ -4,14 +4,14 @@ import (
 	"errors"
 
 	"github.com/streadway/amqp"
-	"github.com/tiago4orion/amqputil"
+	"github.com/tiago4orion/wabbit"
 )
 
 type Channel struct {
 	*amqp.Channel
 }
 
-func (ch *Channel) Publish(exc, route string, msg []byte, opt amqputil.Option) error {
+func (ch *Channel) Publish(exc, route string, msg []byte, opt wabbit.Option) error {
 	var (
 		headers         = amqp.Table{}
 		contentType     = "text/plain"
@@ -59,7 +59,7 @@ func (ch *Channel) Publish(exc, route string, msg []byte, opt amqputil.Option) e
 	)
 }
 
-func (ch *Channel) Consume(queue, consumer string, opt amqputil.Option) (<-chan amqputil.Delivery, error) {
+func (ch *Channel) Consume(queue, consumer string, opt wabbit.Option) (<-chan wabbit.Delivery, error) {
 	var (
 		autoAck, exclusive, noLocal, noWait bool
 		args                                amqp.Table
@@ -111,7 +111,7 @@ func (ch *Channel) Consume(queue, consumer string, opt amqputil.Option) (<-chan 
 		return nil, err
 	}
 
-	deliveries := make(chan amqputil.Delivery)
+	deliveries := make(chan wabbit.Delivery)
 
 	go func() {
 		for d := range amqpd {
@@ -124,7 +124,7 @@ func (ch *Channel) Consume(queue, consumer string, opt amqputil.Option) (<-chan 
 	return deliveries, nil
 }
 
-func (ch *Channel) ExchangeDeclare(name, kind string, opt amqputil.Option) error {
+func (ch *Channel) ExchangeDeclare(name, kind string, opt wabbit.Option) error {
 	var (
 		durable, autoDelete, internal, noWait bool
 		args                                  amqp.Table
@@ -173,7 +173,7 @@ func (ch *Channel) ExchangeDeclare(name, kind string, opt amqputil.Option) error
 	return ch.Channel.ExchangeDeclare(name, kind, durable, autoDelete, internal, noWait, args)
 }
 
-func (ch *Channel) QueueBind(name, key, exchange string, opt amqputil.Option) error {
+func (ch *Channel) QueueBind(name, key, exchange string, opt wabbit.Option) error {
 	var (
 		noWait bool
 		args   amqp.Table
@@ -198,7 +198,7 @@ func (ch *Channel) QueueBind(name, key, exchange string, opt amqputil.Option) er
 	return ch.Channel.QueueBind(name, key, exchange, noWait, args)
 }
 
-func (ch *Channel) QueueDeclare(name string, opt amqputil.Option) (amqputil.Queue, error) {
+func (ch *Channel) QueueDeclare(name string, opt wabbit.Option) (wabbit.Queue, error) {
 	var (
 		durable, autoDelete, exclusive, noWait bool
 		args                                   amqp.Table

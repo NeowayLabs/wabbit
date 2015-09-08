@@ -1,13 +1,13 @@
 package rabbitmq
 
-import "github.com/tiago4orion/amqputil"
+import "github.com/tiago4orion/wabbit"
 
 type Publisher struct {
-	conn    amqputil.Conn
-	channel amqputil.Publisher
+	conn    wabbit.Conn
+	channel wabbit.Publisher
 }
 
-func NewPublisher(conn amqputil.Conn) (*Publisher, error) {
+func NewPublisher(conn wabbit.Conn) (*Publisher, error) {
 	var err error
 
 	pb := Publisher{
@@ -23,7 +23,7 @@ func NewPublisher(conn amqputil.Conn) (*Publisher, error) {
 	return &pb, nil
 }
 
-func (pb *Publisher) Publish(exc string, route string, message string, opt amqputil.Option) error {
+func (pb *Publisher) Publish(exc string, route string, message string, opt wabbit.Option) error {
 	err := pb.channel.Publish(
 		exc,   // publish to an exchange
 		route, // routing to 0 or more queues

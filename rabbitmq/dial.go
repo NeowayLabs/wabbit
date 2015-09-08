@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/streadway/amqp"
-	"github.com/tiago4orion/amqputil"
+	"github.com/tiago4orion/wabbit"
 )
 
 // Conn is the amqp connection
@@ -93,7 +93,7 @@ func (conn *Conn) AutoRedial(outChan chan error, done chan bool) {
 }
 
 // Channel returns a new channel ready to be used
-func (conn *Conn) Channel() (amqputil.Channel, error) {
+func (conn *Conn) Channel() (wabbit.Channel, error) {
 	ch, err := conn.Connection.Channel()
 
 	if err != nil {
