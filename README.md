@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/tiago4orion/amqputil.svg?branch=master)](https://travis-ci.org/tiago4orion/amqputil)
 # amqputil
 
 AMQP is a verbose protocol that makes it difficult to implement proper unit-testing on your application.
