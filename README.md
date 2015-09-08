@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/tiago4orion/amqputil.svg?branch=master)](https://travis-ci.org/tiago4orion/amqputil) [![codecov.io](http://codecov.io/github/tiago4orion/amqputil/coverage.svg?branch=master)](http://codecov.io/github/tiago4orion/amqputil?branch=master)
 
-# amqputil
+# wabbit
 
 AMQP is a verbose protocol that makes it difficult to implement proper unit-testing on your application.
 This package have an AMQP interface and two possible implementations:
@@ -13,9 +13,9 @@ the code below:
 
 ```go
   import (
-	mockClient "github.com/tiago4orion/amqputil/mock/client"
-	mockServer "github.com/tiago4orion/amqputil/mock/server"
-	"github.com/tiago4orion/amqputil/rabbitmq"
+	mockClient "github.com/tiago4orion/wabbit/mock/client"
+	mockServer "github.com/tiago4orion/wabbit/mock/server"
+	"github.com/tiago4orion/wabbit/rabbitmq"
   )
 
   ...
