@@ -78,9 +78,7 @@ func (v *VHost) ExchangeDeclare(name, kind string, opt amqputil.Option) error {
 }
 
 func (v *VHost) QueueDeclare(name string, args amqputil.Option) (amqputil.Queue, error) {
-	q := &Queue{
-		name: name,
-	}
+	q := NewQueue(name)
 
 	v.queues[name] = q
 	return q, nil

@@ -113,3 +113,54 @@ func TestQueueBind(t *testing.T) {
 		return
 	}
 }
+
+func TestBasicPublish(t *testing.T) {
+	vh := NewVHost("/")
+
+	err := vh.ExchangeDeclare("neoway", "amq.topic", nil)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	q, err := vh.QueueDeclare("data", nil)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if q.Name() != "data" {
+		t.Errorf("Invalid queue name")
+		return
+	}
+
+	err = vh.QueueBind("data", "process.data", "neoway", nil)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = vh.Publish("neoway", "process.data", []byte("teste"), nil)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	serverQueue, ok := q.(*Queue)
+
+	if !ok {
+		t.Errorf("Queue isn't of type *server.Queue")
+		return
+	}
+
+	data := <-serverQueue.data
+
+	if string(data.Body()) != "teste" {
+		t.Errorf("Failed to publish message to specified route")
+		return
+	}
+}
