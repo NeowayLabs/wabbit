@@ -3,14 +3,31 @@
 
 # wabbit
 
+> Elmer Fudd: Shhh. Be vewy vewy quiet, I'm hunting wabbits
+
 AMQP is a verbose protocol that makes it difficult to implement proper unit-testing on your application.
+The first goal of this package is provide a sane interface for an
+AMQP client implementation based on the specification AMQP-0-9-1 (no extension) and then an implementation of this interface using the
+well established package [streadway/amap](https://github.com/streadway/amqp) (a wrapper).
+
+What are the advantages of this?
+
+*Testing*
+
+## Example of usage
+
+Below is an example of publisher:
+
+```go
+
+
+
 This package have an AMQP interface and two possible implementations:
 
 * RabbitMQ - Bypass to [streadway/amqp](https://github.com/streadway/amqp)
 * Mock
 
-You can use the mock implementation in your tests and use the rabbitmq implementation on your software. For example,
-the code below:
+In the same way you can use the http package in your software and use the httptest for testing, when using wabbit is recommended to you use the rabbitmq package on your software and amqptest/client in tests. Simple example:
 
 ```go
   import (
@@ -38,5 +55,8 @@ the code below:
 ```
 
 It's a very straightforward implementation that need a lot of improvements yet. Take careful when using it.
+
+KILL DA WABBIT!!!!
+https://www.youtube.com/watch?v=QqC_YdG7GtM
 
 []'s
