@@ -1,10 +1,6 @@
 package server
 
-import (
-	"fmt"
-	"testing"
-	"time"
-)
+import "testing"
 
 func TestVHostWithDefaults(t *testing.T) {
 	vh := NewVHost("/")
@@ -204,8 +200,6 @@ func TestBasicConsumer(t *testing.T) {
 		return
 	}
 
-	time.Sleep(time.Second * 2)
-
 	err = vh.Publish("neoway", "process.data", []byte("teste"), nil)
 
 	if err != nil {
@@ -213,9 +207,7 @@ func TestBasicConsumer(t *testing.T) {
 		return
 	}
 
-	fmt.Printf("Blocing here?")
 	data := <-deliveries
-	fmt.Printf("No...\n")
 
 	if string(data.Body()) != "teste" {
 		t.Errorf("Failed to publish message to specified route")

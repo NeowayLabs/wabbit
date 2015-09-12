@@ -149,13 +149,11 @@ func (v *VHost) Consume(queue, consumerName string, _ wabbit.Option) (<-chan wab
 
 	go func() {
 		for {
-			fmt.Printf("Watiing messages\n")
 			select {
 			case <-c.done:
 				close(c.deliveries)
 				return
 			case d := <-q.data:
-				fmt.Printf("Get delivery: %+v", d)
 				c.deliveries <- d
 			}
 		}
