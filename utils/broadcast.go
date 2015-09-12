@@ -10,6 +10,7 @@ type ErrBroadcast struct {
 	c         chan wabbit.Error
 }
 
+// NewErrBroadcast creates a broadcast object for push errors to subscribed channels
 func NewErrBroadcast() *ErrBroadcast {
 	b := &ErrBroadcast{
 		c:         make(chan wabbit.Error),
@@ -33,6 +34,7 @@ func (b *ErrBroadcast) Add(c chan<- wabbit.Error) {
 	b.listeners = append(b.listeners, c)
 }
 
+// Write to subscribed channels
 func (b *ErrBroadcast) Write(err wabbit.Error) {
 	b.c <- err
 }

@@ -50,6 +50,7 @@ type (
 		DeliveryTag() uint64
 	}
 
+	// Error is an interface for AMQP errors
 	Error interface {
 		Code() int
 		Reason() string
