@@ -14,25 +14,17 @@ What are the advantages of this?
 
 *Testing*
 
-## Example of usage
-
-Below is an example of publisher:
-
-```go
-
-
-
 This package have an AMQP interface and two possible implementations:
 
-* RabbitMQ - Bypass to [streadway/amqp](https://github.com/streadway/amqp)
-* Mock
+* rabbitmq - Bypass to [streadway/amqp](https://github.com/streadway/amqp)
+* amqptest
 
 In the same way you can use the http package in your software and use the httptest for testing, when using wabbit is recommended to you use the rabbitmq package on your software and amqptest/client in tests. Simple example:
 
 ```go
   import (
-	mockClient "github.com/tiago4orion/wabbit/mock/client"
-	mockServer "github.com/tiago4orion/wabbit/mock/server"
+	mockClient "github.com/tiago4orion/wabbit/amqptest/client"
+	mockServer "github.com/tiago4orion/wabbit/amqptest/server"
 	"github.com/tiago4orion/wabbit/rabbitmq"
   )
 
