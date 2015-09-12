@@ -9,9 +9,9 @@ type (
 	// Conn is the amqp connection interface
 	Conn interface {
 		Channel() (Channel, error)
-		Dial(amqpuri string) error
-		AutoRedial(errChan chan error, done chan bool)
+		AutoRedial(errChan chan Error, done chan bool)
 		Close() error
+		NotifyClose(chan Error) chan Error
 	}
 
 	// Channel is an AMQP channel interface
@@ -48,5 +48,13 @@ type (
 
 		Body() []byte
 		DeliveryTag() uint64
+	}
+
+	Error interface {
+		Code() int
+		Reason() string
+		Server() bool
+		Recover() bool
+		error
 	}
 )

@@ -64,9 +64,8 @@ func TestMain(m *testing.M) {
 func waitRabbitOK(host string) error {
 	var err error
 	var counter uint
-	conn := New()
 dial:
-	err = conn.Dial("amqp://guest:guest@" + host + ":" + rabbitmqPort + "/%2f")
+	_, err = Dial("amqp://guest:guest@" + host + ":" + rabbitmqPort + "/%2f")
 	if err != nil {
 		if counter >= 120 {
 			panic("isn't possible to connect on rabbitmq")
@@ -84,8 +83,7 @@ dial:
 // If the rabbitmq disconnects will not be tested here!
 func TestDial(t *testing.T) {
 	// Should fail
-	conn := New()
-	err := conn.Dial("amqp://guest:guest@localhost:35672/%2f")
+	_, err := Dial("amqp://guest:guest@localhost:35672/%2f")
 
 	if err == nil {
 		t.Error("No backend started... Should fail")
@@ -104,7 +102,7 @@ func TestDial(t *testing.T) {
 		return
 	}
 
-	err = conn.Dial("amqp://guest:guest@localhost:35672/%2f")
+	_, err = Dial("amqp://guest:guest@localhost:35672/%2f")
 
 	if err != nil {
 		t.Error(err)
@@ -131,15 +129,14 @@ func TestAutoRedial(t *testing.T) {
 		return
 	}
 
-	conn := New()
-	err = conn.Dial("amqp://guest:guest@localhost:35672/%2f")
+	conn, err := Dial("amqp://guest:guest@localhost:35672/%2f")
 
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	redialErrors := make(chan error)
+	redialErrors := make(chan wabbit.Error)
 	done := make(chan bool)
 	conn.AutoRedial(redialErrors, done)
 
@@ -196,7 +193,7 @@ func TestConnMock(t *testing.T) {
 	var conn wabbit.Conn
 
 	// rabbitmq.Conn satisfies wabbit.Conn interface
-	conn = New()
+	conn = &Conn{}
 
 	if conn == nil {
 		t.Error("Maybe wabbit.Conn interface does not mock amqp.Conn correctly")

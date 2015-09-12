@@ -5,6 +5,7 @@ import (
 
 	"github.com/streadway/amqp"
 	"github.com/tiago4orion/wabbit"
+	"github.com/tiago4orion/wabbit/utils"
 )
 
 // Conn is the amqp connection
@@ -16,13 +17,10 @@ type Conn struct {
 	attempts uint8
 }
 
-// New do what the fucking name says...
-func New() *Conn {
-	return &Conn{}
-}
-
 // Dial to rabbitmq
-func (conn *Conn) Dial(uri string) error {
+func Dial(uri string) (*Conn, error) {
+	conn := &Conn{}
+
 	// closure the uri for handle reconnects
 	conn.dialFn = func() error {
 		var err error
@@ -36,7 +34,45 @@ func (conn *Conn) Dial(uri string) error {
 		return nil
 	}
 
-	return conn.dialFn()
+	err := conn.dialFn()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return conn, nil
+}
+
+func (conn *Conn) NotifyClose(c chan wabbit.Error) chan wabbit.Error {
+	var (
+		amqpErr2 chan *amqp.Error
+	)
+
+	amqpErr2 = make(chan *amqp.Error)
+
+	amqpErr := conn.Connection.NotifyClose(amqpErr2)
+
+	go func() {
+		for {
+			err := <-amqpErr
+			var ne wabbit.Error
+
+			if err != nil {
+				ne = utils.NewError(
+					err.Code,
+					err.Reason,
+					err.Server,
+					err.Recover,
+				)
+			} else {
+				ne = nil
+			}
+
+			c <- ne
+		}
+	}()
+
+	return c
 }
 
 // AutoRedial manages the automatic redial of connection when unexpected closed.
@@ -51,11 +87,12 @@ func (conn *Conn) Dial(uri string) error {
 // AutoRedial will try to automatically reconnect waiting for N seconds before each
 // attempt, where N is the number of attempts of reconnecting. If the number of
 // attempts reach 60, it will be zero'ed.
-func (conn *Conn) AutoRedial(outChan chan error, done chan bool) {
-	errChan := conn.NotifyClose(make(chan *amqp.Error))
+func (conn *Conn) AutoRedial(outChan chan wabbit.Error, done chan bool) {
+	errChan2 := make(chan wabbit.Error)
+	errChan := conn.NotifyClose(errChan2)
 
 	go func() {
-		var err error
+		var err wabbit.Error
 
 		select {
 		case amqpErr := <-errChan:
@@ -75,9 +112,9 @@ func (conn *Conn) AutoRedial(outChan chan error, done chan bool) {
 			// Wait n Seconds where n == conn.attempts...
 			time.Sleep(time.Duration(conn.attempts) * time.Second)
 
-			err = conn.dialFn()
+			connErr := conn.dialFn()
 
-			if err != nil {
+			if connErr != nil {
 				conn.attempts++
 				goto attempts
 			}
