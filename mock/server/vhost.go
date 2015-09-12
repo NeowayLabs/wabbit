@@ -2,18 +2,33 @@ package server
 
 import (
 	"fmt"
+	"os"
+	"sync/atomic"
 
 	"github.com/tiago4orion/wabbit"
 )
+
+var consumerSeq uint64
+
+func uniqueConsumerTag() string {
+	return fmt.Sprintf("ctag-%s-%d", os.Args[0], atomic.AddUint64(&consumerSeq, 1))
+}
 
 // VHost is a fake AMQP virtual host
 type VHost struct {
 	name      string
 	exchanges map[string]Exchange
 	queues    map[string]*Queue
+	consumers map[string]consumer
 }
 
 type Channel VHost
+
+type consumer struct {
+	tag        string
+	deliveries chan wabbit.Delivery
+	done       chan bool
+}
 
 // NewVHost create a new fake AMQP Virtual Host
 func NewVHost(name string) *VHost {
@@ -21,6 +36,7 @@ func NewVHost(name string) *VHost {
 		name:      name,
 		queues:    make(map[string]*Queue),
 		exchanges: make(map[string]Exchange),
+		consumers: make(map[string]consumer),
 	}
 
 	vh.createDefaultExchanges()
@@ -103,14 +119,49 @@ func (v *VHost) QueueBind(name, key, exchange string, _ wabbit.Option) error {
 	return nil
 }
 
-func (v *VHost) Consume(queue, consumer string, opt wabbit.Option) (<-chan wabbit.Delivery, error) {
+func (v *VHost) Consume(queue, consumerName string, _ wabbit.Option) (<-chan wabbit.Delivery, error) {
+	var (
+		found bool
+		c     consumer
+	)
+
+	if consumerName == "" {
+		consumerName = uniqueConsumerTag()
+	}
+
+	if c, found = v.consumers[consumerName]; found {
+		c.done <- true
+		close(c.deliveries)
+	}
+
+	c = consumer{
+		tag:        consumerName,
+		deliveries: make(chan wabbit.Delivery),
+	}
+
+	v.consumers[consumerName] = c
+
 	q, ok := v.queues[queue]
 
 	if !ok {
 		return nil, fmt.Errorf("Unknown queue '%s'", queue)
 	}
 
-	return q.data, nil
+	go func() {
+		for {
+			fmt.Printf("Watiing messages\n")
+			select {
+			case <-c.done:
+				close(c.deliveries)
+				return
+			case d := <-q.data:
+				fmt.Printf("Get delivery: %+v", d)
+				c.deliveries <- d
+			}
+		}
+	}()
+
+	return c.deliveries, nil
 }
 
 func (v *VHost) Publish(exc, route string, msg []byte, _ wabbit.Option) error {

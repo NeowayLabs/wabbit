@@ -1,6 +1,10 @@
 package server
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+	"time"
+)
 
 func TestVHostWithDefaults(t *testing.T) {
 	vh := NewVHost("/")
@@ -158,6 +162,60 @@ func TestBasicPublish(t *testing.T) {
 	}
 
 	data := <-serverQueue.data
+
+	if string(data.Body()) != "teste" {
+		t.Errorf("Failed to publish message to specified route")
+		return
+	}
+}
+
+func TestBasicConsumer(t *testing.T) {
+	vh := NewVHost("/")
+
+	err := vh.ExchangeDeclare("neoway", "amq.topic", nil)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	q, err := vh.QueueDeclare("data-queue", nil)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = vh.QueueBind("data-queue", "process.data", "neoway", nil)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	deliveries, err := vh.Consume(
+		q.Name(),
+		"tag-teste",
+		nil,
+	)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	time.Sleep(time.Second * 2)
+
+	err = vh.Publish("neoway", "process.data", []byte("teste"), nil)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	fmt.Printf("Blocing here?")
+	data := <-deliveries
+	fmt.Printf("No...\n")
 
 	if string(data.Body()) != "teste" {
 		t.Errorf("Failed to publish message to specified route")

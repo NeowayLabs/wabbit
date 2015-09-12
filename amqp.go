@@ -1,5 +1,5 @@
-// Package wabbit provides some abstractions for AMQP for easy the testing.
-// The best way to test third-party libraries in Go is using interfaces
+// Package wabbit provides an interface for AMQP client specification and a mock
+// implementation of that interface.
 package wabbit
 
 type (
