@@ -28,13 +28,7 @@ In the same way you can use the http package in your software and use the httpte
 	"github.com/tiago4orion/wabbit/rabbitmq"
   )
 
-  ...
-
-
-  mockConn := mockClient.Conn()       // amqputil.Conn interface
-  realConn := rabbitmq.Conn()   // amqputil.Conn interface
-  
-  err := mockConn.Dial("amqp://localhost:5672/%2f") // will fail
+  mockConn, err := mockClient.Dial("amqp://localhost:5672/%2f") // will fail
   
   if err != nil {
     panic(err)
@@ -43,7 +37,7 @@ In the same way you can use the http package in your software and use the httpte
   fakeServer := mock.NewServer("amqp://localhost:5672/%2f")
   fakeServer.Start()
   
-  err = mockConn.Dial("amqp://localhost:5672/%2f") // now it works =D
+  mockConn, err = mockClient.Dial("amqp://localhost:5672/%2f") // now it works =D
 ```
 
 It's a very straightforward implementation that need a lot of improvements yet. Take careful when using it.
