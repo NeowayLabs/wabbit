@@ -9,7 +9,7 @@ func TestVHostWithDefaults(t *testing.T) {
 		t.Errorf("Invalid broker name: %s", vh.name)
 	}
 
-	if len(vh.exchanges) < 3 || vh.exchanges[""] == nil ||
+	if len(vh.exchanges) < 5 || vh.exchanges[""] == nil ||
 		vh.exchanges["amq.direct"] == nil || vh.exchanges["amq.topic"] == nil {
 		t.Errorf("VHost created without the required exchanges specified by amqp 0.9.1")
 	}
@@ -54,7 +54,7 @@ func TestBasicExchangeDeclare(t *testing.T) {
 		return
 	}
 
-	if len(vh.exchanges) != 4 {
+	if len(vh.exchanges) != 6 {
 		t.Errorf("Exchange not properly created: %d", len(vh.exchanges))
 		return
 	}

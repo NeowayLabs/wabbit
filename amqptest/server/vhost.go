@@ -47,6 +47,8 @@ func (v *VHost) createDefaultExchanges() {
 	exchs := make(map[string]Exchange)
 	exchs["amq.topic"] = &TopicExchange{}
 	exchs["amq.direct"] = &DirectExchange{}
+	exchs["topic"] = &TopicExchange{}
+	exchs["direct"] = &DirectExchange{}
 	exchs[""] = &DirectExchange{
 		name: "amq.direct",
 	}
