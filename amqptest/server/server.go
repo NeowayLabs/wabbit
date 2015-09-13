@@ -24,8 +24,8 @@ type AMQPServer struct {
 	running bool
 	amqpuri string
 
-	vhost       *VHost
 	notifyChans map[string]*utils.ErrBroadcast
+	channels    map[string]*VHost
 }
 
 // NewServer returns a new fake amqp server
@@ -33,12 +33,19 @@ func newServer(amqpuri string) *AMQPServer {
 	return &AMQPServer{
 		amqpuri:     amqpuri,
 		notifyChans: make(map[string]*utils.ErrBroadcast),
-		vhost:       NewVHost("/"),
+		channels:    make(map[string]*VHost),
 	}
 }
 
-func (s *AMQPServer) CreateChannel() (wabbit.Channel, error) {
-	return s.vhost, nil
+// CreateChannel returns a new fresh channel
+func (s *AMQPServer) CreateChannel(connid string) (wabbit.Channel, error) {
+	if ch, ok := s.channels[connid]; ok {
+		return ch, nil
+	}
+
+	ch := NewVHost("/")
+	s.channels[connid] = ch
+	return ch, nil
 }
 
 // Start a new AMQP server fake-listening on host:port

@@ -157,5 +157,5 @@ func (conn *Conn) Close() error {
 
 // Channel creates a new fake channel
 func (conn *Conn) Channel() (wabbit.Channel, error) {
-	return conn.amqpServer.CreateChannel()
+	return conn.amqpServer.CreateChannel(conn.connID)
 }
