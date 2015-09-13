@@ -1,24 +1,26 @@
-package client
+package amqp
 
 import "github.com/tiago4orion/wabbit"
 
 type Publisher struct {
-	channel wabbit.Publisher
 	conn    wabbit.Conn
+	channel wabbit.Publisher
 }
 
 func NewPublisher(conn wabbit.Conn) (*Publisher, error) {
+	var err error
 
-	ch, err := conn.Channel()
+	pb := Publisher{
+		conn: conn,
+	}
+
+	pb.channel, err = conn.Channel()
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &Publisher{
-		conn:    conn,
-		channel: ch,
-	}, nil
+	return &pb, nil
 }
 
 func (pb *Publisher) Publish(exc string, route string, message string, opt wabbit.Option) error {

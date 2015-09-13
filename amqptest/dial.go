@@ -1,4 +1,4 @@
-package client
+package amqptest
 
 import (
 	"sync"

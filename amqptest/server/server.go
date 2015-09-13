@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	"github.com/tiago4orion/wabbit"
-	"github.com/tiago4orion/wabbit/amqptest"
 	"github.com/tiago4orion/wabbit/utils"
 )
 
@@ -60,7 +59,7 @@ func (s *AMQPServer) Stop() error {
 
 	for _, c := range s.notifyChans {
 		c.Write(utils.NewError(
-			amqptest.ChannelError,
+			utils.ChannelError,
 			"channel/connection is not open",
 			false,
 			false,

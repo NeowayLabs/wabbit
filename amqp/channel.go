@@ -1,4 +1,4 @@
-package rabbitmq
+package amqp
 
 import (
 	"errors"
@@ -173,6 +173,7 @@ func (ch *Channel) ExchangeDeclare(name, kind string, opt wabbit.Option) error {
 	return ch.Channel.ExchangeDeclare(name, kind, durable, autoDelete, internal, noWait, args)
 }
 
+// QueueBind binds the route key to queue
 func (ch *Channel) QueueBind(name, key, exchange string, opt wabbit.Option) error {
 	var (
 		noWait bool
@@ -198,6 +199,7 @@ func (ch *Channel) QueueBind(name, key, exchange string, opt wabbit.Option) erro
 	return ch.Channel.QueueBind(name, key, exchange, noWait, args)
 }
 
+// QueueDeclare declares a new AMQP queue
 func (ch *Channel) QueueDeclare(name string, opt wabbit.Option) (wabbit.Queue, error) {
 	var (
 		durable, autoDelete, exclusive, noWait bool

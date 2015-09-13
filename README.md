@@ -16,28 +16,28 @@ What are the advantages of this?
 
 This package have an AMQP interface and two possible implementations:
 
-* rabbitmq - Bypass to [streadway/amqp](https://github.com/streadway/amqp)
+* amqp - Bypass to [streadway/amqp](https://github.com/streadway/amqp)
 * amqptest
 
-In the same way you can use the http package in your software and use the httptest for testing, when using wabbit is recommended to you use the rabbitmq package on your software and amqptest/client in tests. Simple example:
+In the same way you can use the http package in your software and use the httptest for testing, when using wabbit is recommended use the amqp package on your software and amqptest/client in tests. Simple example:
 
 ```go
   import (
-	mockClient "github.com/tiago4orion/wabbit/amqptest/client"
+	mockClient "github.com/tiago4orion/wabbit/amqptest"
 	mockServer "github.com/tiago4orion/wabbit/amqptest/server"
-	"github.com/tiago4orion/wabbit/rabbitmq"
+	"github.com/tiago4orion/wabbit/amqp"
   )
 
-  mockConn, err := mockClient.Dial("amqp://localhost:5672/%2f") // will fail
+  mockConn, err := amqptest.Dial("amqp://localhost:5672/%2f") // will fail
   
   if err != nil {
     panic(err)
   }
   
-  fakeServer := mock.NewServer("amqp://localhost:5672/%2f")
+  fakeServer := server.NewServer("amqp://localhost:5672/%2f")
   fakeServer.Start()
   
-  mockConn, err = mockClient.Dial("amqp://localhost:5672/%2f") // now it works =D
+  mockConn, err = amqptest.Dial("amqp://localhost:5672/%2f") // now it works =D
 ```
 
 It's a very straightforward implementation that need a lot of improvements yet. Take careful when using it.

@@ -1,4 +1,4 @@
-package amqptest
+package utils
 
 // Error codes that can be sent from the server during a connection or
 // channel exception or used by the client to indicate a class of error like

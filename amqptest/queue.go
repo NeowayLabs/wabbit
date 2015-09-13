@@ -1,4 +1,4 @@
-package client
+package amqptest
 
 type Queue struct {
 	name      string

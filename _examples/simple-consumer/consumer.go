@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/tiago4orion/wabbit"
-	"github.com/tiago4orion/wabbit/rabbitmq"
+	"github.com/tiago4orion/wabbit/amqp"
 )
 
 var (
@@ -67,7 +67,7 @@ func NewConsumer(amqpURI, exchange, exchangeType, queueName, key, ctag string) (
 	var err error
 
 	log.Printf("dialing %q", amqpURI)
-	c.conn, err = rabbitmq.Dial(amqpURI)
+	c.conn, err = amqp.Dial(amqpURI)
 	if err != nil {
 		return nil, fmt.Errorf("Dial: %s", err)
 	}

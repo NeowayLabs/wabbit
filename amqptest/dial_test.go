@@ -1,4 +1,4 @@
-package client
+package amqptest
 
 import (
 	"errors"
@@ -119,17 +119,6 @@ func TestAutoRedial(t *testing.T) {
 	if err != nil {
 		t.Errorf("Client doesn't reconnect in 3 seconds: %s", err.Error())
 		return
-	}
-}
-
-func TestChannelMock(t *testing.T) {
-	var channel wabbit.Channel
-
-	// rabbitmq.Channel satisfies wabbit.Channel interface
-	channel = new(Channel)
-
-	if channel == nil {
-		t.Error("Maybe wabbit.Channel interface does not mock amqp.Channel correctly")
 	}
 }
 
