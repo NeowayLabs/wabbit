@@ -84,9 +84,9 @@ func (v *VHost) ExchangeDeclare(name, kind string, opt wabbit.Option) error {
 	}
 
 	switch kind {
-	case "amq.topic":
+	case "topic":
 		v.exchanges[name] = NewTopicExchange(name)
-	case "amq.direct":
+	case "direct":
 		v.exchanges[name] = NewDirectExchange(name)
 	default:
 		return fmt.Errorf("Invalid exchange type: %s", kind)

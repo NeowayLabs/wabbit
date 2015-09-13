@@ -40,14 +40,14 @@ func TestQueueDeclare(t *testing.T) {
 func TestBasicExchangeDeclare(t *testing.T) {
 	vh := NewVHost("/")
 
-	err := vh.ExchangeDeclare("neoway", "direct", nil)
+	err := vh.ExchangeDeclare("neoway", "amq.direct", nil)
 
 	if err == nil {
-		t.Errorf("The exchange type correct name is amq.direct")
+		t.Errorf("The exchange type correct name is direct")
 		return
 	}
 
-	err = vh.ExchangeDeclare("neoway", "amq.direct", nil)
+	err = vh.ExchangeDeclare("neoway", "direct", nil)
 
 	if err != nil {
 		t.Error(err)
@@ -63,7 +63,7 @@ func TestBasicExchangeDeclare(t *testing.T) {
 func TestQueueBind(t *testing.T) {
 	vh := NewVHost("/")
 
-	err := vh.ExchangeDeclare("neoway", "amq.direct", nil)
+	err := vh.ExchangeDeclare("neoway", "direct", nil)
 
 	if err != nil {
 		t.Error(err)
@@ -117,7 +117,7 @@ func TestQueueBind(t *testing.T) {
 func TestBasicPublish(t *testing.T) {
 	vh := NewVHost("/")
 
-	err := vh.ExchangeDeclare("neoway", "amq.topic", nil)
+	err := vh.ExchangeDeclare("neoway", "topic", nil)
 
 	if err != nil {
 		t.Error(err)
@@ -168,7 +168,7 @@ func TestBasicPublish(t *testing.T) {
 func TestBasicConsumer(t *testing.T) {
 	vh := NewVHost("/")
 
-	err := vh.ExchangeDeclare("neoway", "amq.topic", nil)
+	err := vh.ExchangeDeclare("neoway", "topic", nil)
 
 	if err != nil {
 		t.Error(err)
