@@ -7,6 +7,7 @@ import (
 	"github.com/tiago4orion/wabbit"
 )
 
+// Channel is a wrapper channel structure for amqp.Channel
 type Channel struct {
 	*amqp.Channel
 }
@@ -253,4 +254,9 @@ func (ch *Channel) QueueDeclare(name string, opt wabbit.Option) (wabbit.Queue, e
 	}
 
 	return &Queue{&q}, nil
+}
+
+// Qos controls how many bytes or messages will be handled by channel or connection.
+func (ch *Channel) Qos(prefetchCount, prefetchSize int, global bool) error {
+	return ch.Channel.Qos(prefetchCount, prefetchSize, global)
 }

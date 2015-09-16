@@ -25,6 +25,7 @@ type (
 		QueueDeclare(name string, args Option) (Queue, error)
 		QueueBind(name, key, exchange string, opt Option) error
 		Consume(queue, consumer string, opt Option) (<-chan Delivery, error)
+		Qos(prefetchCount, prefetchSize int, global bool) error
 		Publisher
 	}
 

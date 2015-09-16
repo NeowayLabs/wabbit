@@ -72,6 +72,12 @@ func (v *VHost) Cancel(consumer string, noWait bool) error {
 	return nil
 }
 
+// Qos isn't implemented in the fake server
+func (v *VHost) Qos(prefetchCount, prefetchSize int, global bool) error {
+	// do nothing. It's a implementation-specific tuning
+	return nil
+}
+
 func (v *VHost) ExchangeDeclare(name, kind string, opt wabbit.Option) error {
 	if _, ok := v.exchanges[name]; ok {
 		// TODO: We need review this. If the application is trying to re-create an exchange
