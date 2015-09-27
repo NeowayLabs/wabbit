@@ -23,11 +23,11 @@ func NewPublisher(conn wabbit.Conn) (*Publisher, error) {
 	return &pb, nil
 }
 
-func (pb *Publisher) Publish(exc string, route string, message string, opt wabbit.Option) error {
+func (pb *Publisher) Publish(exc string, route string, message []byte, opt wabbit.Option) error {
 	err := pb.channel.Publish(
 		exc,   // publish to an exchange
 		route, // routing to 0 or more queues
-		[]byte(message),
+		message,
 		opt,
 	)
 
