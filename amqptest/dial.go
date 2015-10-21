@@ -4,8 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"code.google.com/p/go-uuid/uuid"
-
+	"github.com/pborman/uuid"
 	"github.com/tiago4orion/wabbit"
 	"github.com/tiago4orion/wabbit/amqptest/server"
 	"github.com/tiago4orion/wabbit/utils"
