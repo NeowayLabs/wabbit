@@ -174,6 +174,10 @@ func (ch *Channel) ExchangeDeclare(name, kind string, opt wabbit.Option) error {
 	return ch.Channel.ExchangeDeclare(name, kind, durable, autoDelete, internal, noWait, args)
 }
 
+func (ch *Channel) QueueUnbind(name, route, exchange string, _ wabbit.Option) error {
+	return ch.Channel.QueueUnbind(name, route, exchange, nil)
+}
+
 // QueueBind binds the route key to queue
 func (ch *Channel) QueueBind(name, key, exchange string, opt wabbit.Option) error {
 	var (

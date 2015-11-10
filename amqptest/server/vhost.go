@@ -127,6 +127,25 @@ func (v *VHost) QueueBind(name, key, exchange string, _ wabbit.Option) error {
 	return nil
 }
 
+func (v *VHost) QueueUnbind(name, key, exchange string, _ wabbit.Option) error {
+	var (
+		exch Exchange
+		q    *Queue
+		ok   bool
+	)
+
+	if exch, ok = v.exchanges[exchange]; !ok {
+		return fmt.Errorf("Unknown exchange '%s'", exchange)
+	}
+
+	if q, ok = v.queues[name]; !ok {
+		return fmt.Errorf("Unknown queue '%s'", name)
+	}
+
+	exch.delBinding(key)
+	return nil
+}
+
 // Consume starts a fake consumer of queue
 func (v *VHost) Consume(queue, consumerName string, _ wabbit.Option) (<-chan wabbit.Delivery, error) {
 	var (

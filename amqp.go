@@ -24,6 +24,7 @@ type (
 		ExchangeDeclare(name, kind string, opt Option) error
 		QueueDeclare(name string, args Option) (Queue, error)
 		QueueBind(name, key, exchange string, opt Option) error
+		QueueUnbind(name, route, exchange string, args Option) error
 		Consume(queue, consumer string, opt Option) (<-chan Delivery, error)
 		Qos(prefetchCount, prefetchSize int, global bool) error
 		Publisher

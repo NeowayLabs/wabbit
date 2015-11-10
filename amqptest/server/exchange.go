@@ -5,6 +5,7 @@ import "fmt"
 type Exchange interface {
 	route(route string, message []byte) (*Queue, error)
 	addBinding(route string, q *Queue)
+	delBinding(route string)
 }
 
 type TopicExchange struct {
@@ -21,6 +22,10 @@ func NewTopicExchange(name string) *TopicExchange {
 
 func (t *TopicExchange) addBinding(route string, q *Queue) {
 	t.bindings[route] = q
+}
+
+func (t *TopicExchange) delBinding(route string) {
+	delete(t.bindings, route)
 }
 
 func (t *TopicExchange) route(route string, _ []byte) (*Queue, error) {
@@ -47,6 +52,10 @@ func NewDirectExchange(name string) *DirectExchange {
 
 func (d *DirectExchange) addBinding(route string, q *Queue) {
 	d.bindings[route] = q
+}
+
+func (d *DirectExchange) delBinding(route string) {
+	delete(d.bindings, route)
 }
 
 func (d *DirectExchange) route(route string, _ []byte) (*Queue, error) {
