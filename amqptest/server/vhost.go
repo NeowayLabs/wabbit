@@ -108,6 +108,11 @@ func (v *VHost) QueueDeclare(name string, args wabbit.Option) (wabbit.Queue, err
 	return q, nil
 }
 
+func (v *VHost) QueueDelete(name string, args wabbit.Option) (int, error) {
+	delete(v.queues, name)
+	return 0, nil
+}
+
 func (v *VHost) QueueBind(name, key, exchange string, _ wabbit.Option) error {
 	var (
 		exch Exchange
@@ -130,7 +135,6 @@ func (v *VHost) QueueBind(name, key, exchange string, _ wabbit.Option) error {
 func (v *VHost) QueueUnbind(name, key, exchange string, _ wabbit.Option) error {
 	var (
 		exch Exchange
-		q    *Queue
 		ok   bool
 	)
 
@@ -138,7 +142,7 @@ func (v *VHost) QueueUnbind(name, key, exchange string, _ wabbit.Option) error {
 		return fmt.Errorf("Unknown exchange '%s'", exchange)
 	}
 
-	if q, ok = v.queues[name]; !ok {
+	if _, ok = v.queues[name]; !ok {
 		return fmt.Errorf("Unknown queue '%s'", name)
 	}
 

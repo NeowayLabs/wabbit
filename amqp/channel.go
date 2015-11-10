@@ -260,6 +260,38 @@ func (ch *Channel) QueueDeclare(name string, opt wabbit.Option) (wabbit.Queue, e
 	return &Queue{&q}, nil
 }
 
+func (ch *Channel) QueueDelete(name string, opt wabbit.Option) (int, error) {
+	var (
+		ifUnused, ifEmpty, noWait bool
+	)
+
+	if v, ok := opt["ifUnused"]; ok {
+		ifUnused, ok = v.(bool)
+
+		if !ok {
+			return 0, errors.New("ifUnused option is of type bool")
+		}
+	}
+
+	if v, ok := opt["ifEmpty"]; ok {
+		ifEmpty, ok = v.(bool)
+
+		if !ok {
+			return 0, errors.New("ifEmpty option is of type bool")
+		}
+	}
+
+	if v, ok := opt["noWait"]; ok {
+		noWait, ok = v.(bool)
+
+		if !ok {
+			return 0, errors.New("noWait option is of type bool")
+		}
+	}
+
+	return ch.Channel.QueueDelete(name, ifUnused, ifEmpty, noWait)
+}
+
 // Qos controls how many bytes or messages will be handled by channel or connection.
 func (ch *Channel) Qos(prefetchCount, prefetchSize int, global bool) error {
 	return ch.Channel.Qos(prefetchCount, prefetchSize, global)
