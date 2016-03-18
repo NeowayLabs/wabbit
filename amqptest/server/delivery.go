@@ -3,7 +3,10 @@ package server
 type (
 	// Delivery is an interface to delivered messages
 	Delivery struct {
-		data []byte
+		data          []byte
+		consumerTag   string
+		originalRoute string
+		channID       string // channel that published the message
 	}
 )
 
@@ -31,4 +34,8 @@ func (d *Delivery) Body() []byte {
 
 func (d *Delivery) DeliveryTag() uint64 {
 	return 0
+}
+
+func (d *Delivery) ConsumerTag() string {
+	return d.consumerTag
 }

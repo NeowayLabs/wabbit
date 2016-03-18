@@ -101,15 +101,10 @@ func TestQueueBind(t *testing.T) {
 		return
 	}
 
-	q2, err := nwExchange.route("process.data", []byte{})
+	err = nwExchange.route("process.data", []byte{})
 
 	if err != nil {
 		t.Error(err)
-		return
-	}
-
-	if q2 != q {
-		t.Errorf("Direct exchange routing to invalid queue")
 		return
 	}
 }
@@ -158,56 +153,6 @@ func TestBasicPublish(t *testing.T) {
 	}
 
 	data := <-serverQueue.data
-
-	if string(data.Body()) != "teste" {
-		t.Errorf("Failed to publish message to specified route")
-		return
-	}
-}
-
-func TestBasicConsumer(t *testing.T) {
-	vh := NewVHost("/")
-
-	err := vh.ExchangeDeclare("neoway", "topic", nil)
-
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	q, err := vh.QueueDeclare("data-queue", nil)
-
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	err = vh.QueueBind("data-queue", "process.data", "neoway", nil)
-
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	deliveries, err := vh.Consume(
-		q.Name(),
-		"tag-teste",
-		nil,
-	)
-
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	err = vh.Publish("neoway", "process.data", []byte("teste"), nil)
-
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	data := <-deliveries
 
 	if string(data.Body()) != "teste" {
 		t.Errorf("Failed to publish message to specified route")

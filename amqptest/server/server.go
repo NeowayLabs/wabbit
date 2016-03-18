@@ -2,10 +2,15 @@ package server
 
 import (
 	"errors"
+	"fmt"
 	"sync"
 
 	"github.com/tiago4orion/wabbit"
 	"github.com/tiago4orion/wabbit/utils"
+)
+
+const (
+	MaxChannels int = 2 << 10
 )
 
 var (
@@ -25,7 +30,8 @@ type AMQPServer struct {
 	amqpuri string
 
 	notifyChans map[string]*utils.ErrBroadcast
-	channels    map[string]*VHost
+	channels    map[string][]*Channel
+	vhost       *VHost
 }
 
 // NewServer returns a new fake amqp server
@@ -33,18 +39,28 @@ func newServer(amqpuri string) *AMQPServer {
 	return &AMQPServer{
 		amqpuri:     amqpuri,
 		notifyChans: make(map[string]*utils.ErrBroadcast),
-		channels:    make(map[string]*VHost),
+		channels:    make(map[string][]*Channel),
+		vhost:       NewVHost("/"),
 	}
 }
 
 // CreateChannel returns a new fresh channel
 func (s *AMQPServer) CreateChannel(connid string) (wabbit.Channel, error) {
-	if ch, ok := s.channels[connid]; ok {
-		return ch, nil
+	if _, ok := s.channels[connid]; !ok {
+		s.channels[connid] = make([]*Channel, 0, MaxChannels)
 	}
 
-	ch := NewVHost("/")
-	s.channels[connid] = ch
+	channels := s.channels[connid]
+
+	if len(channels) >= MaxChannels {
+		return nil, fmt.Errorf("Channel quota exceeded, Wabbit"+
+			" supports only %d fake channels for tests.", MaxChannels)
+	}
+
+	ch := NewChannel(s.vhost)
+
+	channels = append(channels, ch)
+	s.channels[connid] = channels
 	return ch, nil
 }
 
