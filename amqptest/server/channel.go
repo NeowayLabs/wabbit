@@ -143,7 +143,19 @@ func (ch *Channel) Ack(tag uint64, multiple bool) error {
 
 		ch.unacked = ch.unacked[:pos+copy(ch.unacked[pos:], ch.unacked[pos+1:])]
 	} else {
-		ch.unacked = make([]unackData, 0, QueueMaxLen)
+		ackMessages := make([]uint64, 0, QueueMaxLen)
+
+		for pos, ud = range ch.unacked {
+			udTag := ud.d.DeliveryTag()
+
+			if udTag <= tag {
+				ackMessages = append(ackMessages, udTag)
+			}
+		}
+
+		for _, udTag := range ackMessages {
+			ch.Ack(udTag, false)
+		}
 	}
 
 	return nil
