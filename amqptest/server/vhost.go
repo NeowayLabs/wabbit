@@ -2,32 +2,15 @@ package server
 
 import (
 	"fmt"
-	"os"
-	"sync/atomic"
 
 	"github.com/tiago4orion/wabbit"
 )
-
-var consumerSeq uint64
-
-func uniqueConsumerTag() string {
-	return fmt.Sprintf("ctag-%s-%d", os.Args[0], atomic.AddUint64(&consumerSeq, 1))
-}
 
 // VHost is a fake AMQP virtual host
 type VHost struct {
 	name      string
 	exchanges map[string]Exchange
 	queues    map[string]*Queue
-	consumers map[string]consumer
-}
-
-type Channel VHost
-
-type consumer struct {
-	tag        string
-	deliveries chan wabbit.Delivery
-	done       chan bool
 }
 
 // NewVHost create a new fake AMQP Virtual Host
@@ -36,7 +19,6 @@ func NewVHost(name string) *VHost {
 		name:      name,
 		queues:    make(map[string]*Queue),
 		exchanges: make(map[string]Exchange),
-		consumers: make(map[string]consumer),
 	}
 
 	vh.createDefaultExchanges()
@@ -54,18 +36,6 @@ func (v *VHost) createDefaultExchanges() {
 	}
 
 	v.exchanges = exchs
-}
-
-func (v *VHost) Ack(tag uint64, multiple bool) error {
-	return nil
-}
-
-func (v *VHost) Nack(tag uint64, multiple bool, requeue bool) error {
-	return nil
-}
-
-func (v *VHost) Reject(tag uint64, requeue bool) error {
-	return nil
 }
 
 func (v *VHost) Cancel(consumer string, noWait bool) error {
@@ -102,6 +72,10 @@ func (v *VHost) ExchangeDeclare(name, kind string, opt wabbit.Option) error {
 }
 
 func (v *VHost) QueueDeclare(name string, args wabbit.Option) (wabbit.Queue, error) {
+	if q, ok := v.queues[name]; ok {
+		return q, nil
+	}
+
 	q := NewQueue(name)
 
 	v.queues[name] = q
@@ -150,58 +124,13 @@ func (v *VHost) QueueUnbind(name, key, exchange string, _ wabbit.Option) error {
 	return nil
 }
 
-// Consume starts a fake consumer of queue
-func (v *VHost) Consume(queue, consumerName string, _ wabbit.Option) (<-chan wabbit.Delivery, error) {
-	var (
-		found bool
-		c     consumer
-	)
-
-	if consumerName == "" {
-		consumerName = uniqueConsumerTag()
-	}
-
-	if c, found = v.consumers[consumerName]; found {
-		c.done <- true
-		close(c.deliveries)
-	}
-
-	c = consumer{
-		tag:        consumerName,
-		deliveries: make(chan wabbit.Delivery),
-	}
-
-	v.consumers[consumerName] = c
-
-	q, ok := v.queues[queue]
-
-	if !ok {
-		return nil, fmt.Errorf("Unknown queue '%s'", queue)
-	}
-
-	go func() {
-		for {
-			select {
-			case <-c.done:
-				close(c.deliveries)
-				return
-			case d := <-q.data:
-				c.deliveries <- d
-			}
-		}
-	}()
-
-	return c.deliveries, nil
-}
-
 // Publish push a new message to queue data channel.
 // The queue data channel is a buffered channel of length `QueueMaxLen`. If
 // the queue is full, this method will block until some messages are consumed.
-func (v *VHost) Publish(exc, route string, msg []byte, _ wabbit.Option) error {
+func (v *VHost) Publish(exc, route string, d *Delivery, _ wabbit.Option) error {
 	var (
 		exch Exchange
 		ok   bool
-		q    *Queue
 		err  error
 	)
 
@@ -209,12 +138,11 @@ func (v *VHost) Publish(exc, route string, msg []byte, _ wabbit.Option) error {
 		return fmt.Errorf("Unknow exchange '%s'", exc)
 	}
 
-	q, err = exch.route(route, msg)
+	err = exch.route(route, d)
 
 	if err != nil {
 		return err
 	}
 
-	q.data <- NewDelivery(msg)
 	return nil
 }

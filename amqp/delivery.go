@@ -13,3 +13,7 @@ func (d *Delivery) Body() []byte {
 func (d *Delivery) DeliveryTag() uint64 {
 	return d.Delivery.DeliveryTag
 }
+
+func (d *Delivery) ConsumerTag() string {
+	return d.Delivery.ConsumerTag
+}

@@ -3,7 +3,7 @@ package server
 import "fmt"
 
 type Exchange interface {
-	route(route string, message []byte) (*Queue, error)
+	route(route string, d *Delivery) error
 	addBinding(route string, q *Queue)
 	delBinding(route string)
 }
@@ -28,14 +28,15 @@ func (t *TopicExchange) delBinding(route string) {
 	delete(t.bindings, route)
 }
 
-func (t *TopicExchange) route(route string, _ []byte) (*Queue, error) {
+func (t *TopicExchange) route(route string, d *Delivery) error {
 	for bname, q := range t.bindings {
 		if topicMatch(bname, route) {
-			return q, nil
+			q.data <- d
+			return nil
 		}
 	}
 
-	return nil, fmt.Errorf("Route '%s' doesn't match any routing-key", route)
+	return fmt.Errorf("Route '%s' doesn't match any routing-key", route)
 }
 
 type DirectExchange struct {
@@ -58,11 +59,12 @@ func (d *DirectExchange) delBinding(route string) {
 	delete(d.bindings, route)
 }
 
-func (d *DirectExchange) route(route string, _ []byte) (*Queue, error) {
+func (d *DirectExchange) route(route string, delivery *Delivery) error {
 	if q, ok := d.bindings[route]; ok {
-		return q, nil
+		q.data <- delivery
+		return nil
 	}
 
-	return nil, fmt.Errorf("No bindings to route: %s", route)
+	return fmt.Errorf("No bindings to route: %s", route)
 
 }

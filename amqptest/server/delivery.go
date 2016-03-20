@@ -3,26 +3,32 @@ package server
 type (
 	// Delivery is an interface to delivered messages
 	Delivery struct {
-		data []byte
+		data          []byte
+		tag           uint64
+		consumerTag   string
+		originalRoute string
+		channel       *Channel
 	}
 )
 
-func NewDelivery(data []byte) *Delivery {
+func NewDelivery(ch *Channel, data []byte, tag uint64) *Delivery {
 	return &Delivery{
-		data: data,
+		data:    data,
+		channel: ch,
+		tag:     tag,
 	}
 }
 
 func (d *Delivery) Ack(multiple bool) error {
-	return nil
+	return d.channel.Ack(d.tag, multiple)
 }
 
-func (d *Delivery) Nack(multiple, request bool) error {
-	return nil
+func (d *Delivery) Nack(multiple, requeue bool) error {
+	return d.channel.Nack(d.tag, multiple, requeue)
 }
 
 func (d *Delivery) Reject(requeue bool) error {
-	return nil
+	return d.channel.Nack(d.tag, false, requeue)
 }
 
 func (d *Delivery) Body() []byte {
@@ -30,5 +36,9 @@ func (d *Delivery) Body() []byte {
 }
 
 func (d *Delivery) DeliveryTag() uint64 {
-	return 0
+	return d.tag
+}
+
+func (d *Delivery) ConsumerTag() string {
+	return d.consumerTag
 }

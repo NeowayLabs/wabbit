@@ -28,6 +28,7 @@ type (
 		QueueUnbind(name, route, exchange string, args Option) error
 		Consume(queue, consumer string, opt Option) (<-chan Delivery, error)
 		Qos(prefetchCount, prefetchSize int, global bool) error
+		Close() error
 		Publisher
 	}
 
@@ -51,6 +52,7 @@ type (
 
 		Body() []byte
 		DeliveryTag() uint64
+		ConsumerTag() string
 	}
 
 	// Error is an interface for AMQP errors
