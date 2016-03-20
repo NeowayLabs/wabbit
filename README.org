@@ -31,28 +31,43 @@ This package have an AMQP interface and two possible implementations:
 * amqptest
 
 In the same way you can use the http package in your software and use
-the httptest for testing, when using wabbit is recommended use the
-amqp package on your software and amqptest/client in tests. Simple
-example:
+the httptest for testing, when using wabbit is recommended to use the
+wabbit/amqp package on your software and wabbit/amqptest in your
+tests. Simple test example:
 
 #+NAME: wabbit-test-example
 #+BEGIN_SRC go
-  import (
-	mockClient "github.com/tiago4orion/wabbit/amqptest"
-	mockServer "github.com/tiago4orion/wabbit/amqptest/server"
+package main
+
+import (
+	"testing"
+	"github.com/tiago4orion/wabbit/amqptest"
+	"github.com/tiago4orion/wabbit/amqptest/server"
 	"github.com/tiago4orion/wabbit/amqp"
-  )
+)
 
-  mockConn, err := amqptest.Dial("amqp://localhost:5672/%2f") // will fail
 
-  if err != nil {
-    panic(err)
-  }
+func TestChannelCreation(t *testing.T) {
+	mockConn, err := amqptest.Dial("amqp://localhost:5672/%2f") // will fail,
 
-  fakeServer := server.NewServer("amqp://localhost:5672/%2f")
-  fakeServer.Start()
+	if err == nil {
+		t.Error("This shall fail, because no fake amqp server is running...")
+	}
 
-  mockConn, err = amqptest.Dial("amqp://localhost:5672/%2f") // now it works =D
+	fakeServer := server.NewServer("amqp://localhost:5672/%2f")
+	fakeServer.Start()
+
+	mockConn, err = amqptest.Dial("amqp://localhost:5672/%2f") // now it works =D
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	//Now you can use mockConn as a real amqp connection.
+	channel, err := mockConn.Channel()
+
+	// ...
+}
 #+END_SRC
 
 It's a very straightforward implementation that need a lot of
