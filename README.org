@@ -1,6 +1,6 @@
 #+CAPTION: Travis-CI status
 #+NAME: travis-build-status
-[[https://travis-ci.org/tiago4orion/wabbit][https://travis-ci.org/tiago4orion/wabbit.svg?branch=master]] https://travis-ci.org/tiago4orion/wabbit.svg?branch=master
+[[https://travis-ci.org/tiago4orion/wabbit][https://travis-ci.org/tiago4orion/wabbit.svg?branch=master]]
 
 #+CAPTION: Code coverage status
 #+NAME: codecov-status
