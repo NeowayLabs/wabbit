@@ -202,6 +202,10 @@ func (ch *Channel) Nack(tag uint64, multiple bool, requeue bool) error {
 	return nil
 }
 
+func (ch *Channel) Reject(tag uint64, requeue bool) error {
+	return ch.Nack(tag, false, requeue)
+}
+
 func (ch *Channel) Close() error {
 	ch.muConsumer.Lock()
 	defer ch.muConsumer.Unlock()
