@@ -21,7 +21,7 @@ script:
 #  - goveralls -coverprofile=coverage.txt -service=travis-ci
 before_install:
   - sudo apt-get update
-  - sudo apt-get install curl
+  - sudo apt-get install -y curl
   - curl -fsSL https://get.docker.com/ | sh
   - sudo pip install codecov
 after_success:
