@@ -20,16 +20,15 @@ func NewDelivery(ch *Channel, data []byte, tag uint64) *Delivery {
 }
 
 func (d *Delivery) Ack(multiple bool) error {
-	d.channel.Ack(d.tag, multiple)
-	return nil
+	return d.channel.Ack(d.tag, multiple)
 }
 
-func (d *Delivery) Nack(multiple, request bool) error {
-	return nil
+func (d *Delivery) Nack(multiple, requeue bool) error {
+	return d.channel.Nack(d.tag, multiple, requeue)
 }
 
 func (d *Delivery) Reject(requeue bool) error {
-	return nil
+	return d.channel.Nack(d.tag, false, requeue)
 }
 
 func (d *Delivery) Body() []byte {

@@ -161,6 +161,47 @@ func (ch *Channel) Ack(tag uint64, multiple bool) error {
 	return nil
 }
 
+func (ch *Channel) Nack(tag uint64, multiple bool, requeue bool) error {
+	var (
+		pos int
+		ud  unackData
+	)
+
+	ch.muUnacked.Lock()
+	defer ch.muUnacked.Unlock()
+
+	if !multiple {
+		for pos, ud = range ch.unacked {
+			if ud.d.DeliveryTag() == tag {
+				break
+			}
+		}
+
+		if requeue {
+			ud.q.data <- ud.d
+		} else {
+			// discards, same as reject
+			ch.unacked = ch.unacked[:pos+copy(ch.unacked[pos:], ch.unacked[pos+1:])]
+		}
+	} else {
+		nackMessages := make([]uint64, 0, QueueMaxLen)
+
+		for pos, ud = range ch.unacked {
+			udTag := ud.d.DeliveryTag()
+
+			if udTag <= tag {
+				nackMessages = append(nackMessages, udTag)
+			}
+		}
+
+		for _, udTag := range nackMessages {
+			ch.Nack(udTag, false, requeue)
+		}
+	}
+
+	return nil
+}
+
 func (ch *Channel) Close() error {
 	ch.muConsumer.Lock()
 	defer ch.muConsumer.Unlock()
