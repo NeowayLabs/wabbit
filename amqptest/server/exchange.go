@@ -36,7 +36,8 @@ func (t *TopicExchange) route(route string, d *Delivery) error {
 		}
 	}
 
-	return fmt.Errorf("Route '%s' doesn't match any routing-key", route)
+	// The route doesnt match any binding, then will be discarded
+	return nil
 }
 
 type DirectExchange struct {

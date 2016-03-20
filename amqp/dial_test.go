@@ -68,7 +68,7 @@ func TestMain(m *testing.M) {
 
 	if err != nil || dockerClient == nil {
 		fmt.Printf("You need docker >= 1.6 installed to enable testing rabbitmq backend\n")
-		panic(err.Error())
+		os.Exit(1)
 	}
 
 	dockerClient.Remove(rabbitmqCtnName1)

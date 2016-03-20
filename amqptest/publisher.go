@@ -7,16 +7,20 @@ type Publisher struct {
 	conn    wabbit.Conn
 }
 
-func NewPublisher(conn wabbit.Conn) (*Publisher, error) {
-	ch, err := conn.Channel()
+func NewPublisher(conn wabbit.Conn, channel wabbit.Channel) (*Publisher, error) {
+	var err error
 
-	if err != nil {
-		return nil, err
+	if channel == nil {
+		channel, err = conn.Channel()
+
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &Publisher{
 		conn:    conn,
-		channel: ch,
+		channel: channel,
 	}, nil
 }
 
