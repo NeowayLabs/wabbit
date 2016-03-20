@@ -6,7 +6,7 @@ services:
 
 go:
   - tip
-install: 
+install:
   - go get -d -v ./...
   - go build
 script:
@@ -20,7 +20,10 @@ script:
   - hack/check.sh
 #  - goveralls -coverprofile=coverage.txt -service=travis-ci
 before_install:
-  sudo pip install codecov
+  - sudo apt-get update
+  - sudo apt-get install curl
+  - curl -fsSL https://get.docker.com/ | sh
+  - sudo pip install codecov
 after_success:
   codecov
 notifications:
