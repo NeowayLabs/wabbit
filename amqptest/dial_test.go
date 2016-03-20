@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tiago4orion/wabbit"
-	"github.com/tiago4orion/wabbit/amqptest/server"
+	"github.com/NeowayLabs/wabbit"
+	"github.com/NeowayLabs/wabbit/amqptest/server"
 )
 
 var rabbitmqPort = "35672"

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/tiago4orion/wabbit"
-	"github.com/tiago4orion/wabbit/utils"
+	"github.com/NeowayLabs/wabbit"
+	"github.com/NeowayLabs/wabbit/utils"
 )
 
 const (

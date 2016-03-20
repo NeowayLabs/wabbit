@@ -1,6 +1,6 @@
 package server
 
-import "github.com/tiago4orion/wabbit"
+import "github.com/NeowayLabs/wabbit"
 
 const (
 	QueueMaxLen = 2 << 8

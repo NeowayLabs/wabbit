@@ -1,6 +1,6 @@
 package amqp
 
-import "github.com/tiago4orion/wabbit"
+import "github.com/NeowayLabs/wabbit"
 
 type Publisher struct {
 	conn    wabbit.Conn

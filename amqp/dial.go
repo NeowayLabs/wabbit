@@ -3,9 +3,9 @@ package amqp
 import (
 	"time"
 
+	"github.com/NeowayLabs/wabbit"
+	"github.com/NeowayLabs/wabbit/utils"
 	"github.com/streadway/amqp"
-	"github.com/tiago4orion/wabbit"
-	"github.com/tiago4orion/wabbit/utils"
 )
 
 // Conn is the amqp connection

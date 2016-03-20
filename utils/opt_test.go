@@ -3,8 +3,8 @@ package utils
 import (
 	"testing"
 
+	"github.com/NeowayLabs/wabbit"
 	"github.com/streadway/amqp"
-	"github.com/tiago4orion/wabbit"
 )
 
 func TestConvertOptDefaults(t *testing.T) {

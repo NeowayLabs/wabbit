@@ -3,8 +3,8 @@ package utils
 import (
 	"fmt"
 
+	"github.com/NeowayLabs/wabbit"
 	"github.com/streadway/amqp"
-	"github.com/tiago4orion/wabbit"
 )
 
 type Xstring []string

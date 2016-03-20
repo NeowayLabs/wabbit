@@ -1,6 +1,6 @@
 package utils
 
-import "github.com/tiago4orion/wabbit"
+import "github.com/NeowayLabs/wabbit"
 
 const listenerSlots = 128
 

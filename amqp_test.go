@@ -3,8 +3,8 @@ package wabbit_test
 import (
 	"testing"
 
-	"github.com/tiago4orion/wabbit/amqptest"
-	"github.com/tiago4orion/wabbit/amqptest/server"
+	"github.com/NeowayLabs/wabbit/amqptest"
+	"github.com/NeowayLabs/wabbit/amqptest/server"
 )
 
 func TestBasicUsage(t *testing.T) {

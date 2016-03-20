@@ -6,7 +6,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/tiago4orion/wabbit"
+	"github.com/NeowayLabs/wabbit"
 )
 
 type (
