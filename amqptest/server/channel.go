@@ -99,7 +99,16 @@ func (ch *Channel) Consume(queue, consumerName string, _ wabbit.Option) (<-chan 
 				return
 			case d := <-q.data:
 				ch.addUnacked(d, q)
-				c.deliveries <- d
+
+				// sub-select required for cases when
+				// client attempts to close the channel
+				// concurrently with re-enqueues of messages
+				select {
+				case c.deliveries <- d:
+				case <-c.done:
+					close(c.deliveries)
+					return
+				}
 			}
 		}
 	}()
@@ -131,9 +140,6 @@ func (ch *Channel) Ack(tag uint64, multiple bool) error {
 		ud  unackData
 	)
 
-	ch.muUnacked.Lock()
-	defer ch.muUnacked.Unlock()
-
 	if !multiple {
 		for pos, ud = range ch.unacked {
 			if ud.d.DeliveryTag() == tag {
@@ -141,7 +147,10 @@ func (ch *Channel) Ack(tag uint64, multiple bool) error {
 			}
 		}
 
+		ch.muUnacked.Lock()
 		ch.unacked = ch.unacked[:pos+copy(ch.unacked[pos:], ch.unacked[pos+1:])]
+		ch.muUnacked.Unlock()
+
 	} else {
 		ackMessages := make([]uint64, 0, QueueMaxLen)
 
@@ -167,9 +176,6 @@ func (ch *Channel) Nack(tag uint64, multiple bool, requeue bool) error {
 		ud  unackData
 	)
 
-	ch.muUnacked.Lock()
-	defer ch.muUnacked.Unlock()
-
 	if !multiple {
 		for pos, ud = range ch.unacked {
 			if ud.d.DeliveryTag() == tag {
@@ -179,10 +185,11 @@ func (ch *Channel) Nack(tag uint64, multiple bool, requeue bool) error {
 
 		if requeue {
 			ud.q.data <- ud.d
-		} else {
-			// discards, same as reject
-			ch.unacked = ch.unacked[:pos+copy(ch.unacked[pos:], ch.unacked[pos+1:])]
 		}
+
+		ch.muUnacked.Lock()
+		ch.unacked = ch.unacked[:pos+copy(ch.unacked[pos:], ch.unacked[pos+1:])]
+		ch.muUnacked.Unlock()
 	} else {
 		nackMessages := make([]uint64, 0, QueueMaxLen)
 

@@ -38,18 +38,6 @@ func (v *VHost) createDefaultExchanges() {
 	v.exchanges = exchs
 }
 
-func (v *VHost) Ack(tag uint64, multiple bool) error {
-	return nil
-}
-
-func (v *VHost) Nack(tag uint64, multiple bool, requeue bool) error {
-	return nil
-}
-
-func (v *VHost) Reject(tag uint64, requeue bool) error {
-	return nil
-}
-
 func (v *VHost) Cancel(consumer string, noWait bool) error {
 	return nil
 }
