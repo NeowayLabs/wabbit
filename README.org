@@ -27,12 +27,12 @@ What are the advantages of this?
 
 This package have an AMQP interface and two possible implementations:
 
-* amqp - Bypass to [[https://github.com/streadway/amqp][streadwat/amqp]]
-* amqptest
+- wabbit/amqp - Bypass to [[https://github.com/streadway/amqp][streadwat/amqp]]
+- wabbit/amqptest
 
 In the same way you can use the http package in your software and use
-the httptest for testing, when using wabbit is recommended to use the
-wabbit/amqp package on your software and wabbit/amqptest in your
+the /httptest/ for testing, when using wabbit is recommended to use the
+/wabbit/amqp/ package on your software and /wabbit/amqptest/ in your
 tests. Simple test example:
 
 #+NAME: wabbit-test-example
