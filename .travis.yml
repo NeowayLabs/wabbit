@@ -20,8 +20,6 @@ script:
   - hack/check.sh
 #  - goveralls -coverprofile=coverage.txt -service=travis-ci
 before_install:
-  - sudo apt-get update -qq
-  - sudo apt-get upgrade -y -o Dpkg::Options::="--force-confnew"
   - sudo pip install codecov
 after_success:
   codecov
