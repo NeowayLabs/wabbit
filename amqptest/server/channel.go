@@ -12,10 +12,11 @@ import (
 type (
 	Channel struct {
 		*VHost
-		*sync.Mutex
 
-		unacked   []unackData
-		consumers map[string]consumer
+		unacked    []unackData
+		muUnacked  *sync.RWMutex
+		consumers  map[string]consumer
+		muConsumer *sync.RWMutex
 	}
 
 	unackData struct {
@@ -38,10 +39,11 @@ func uniqueConsumerTag() string {
 
 func NewChannel(vhost *VHost) *Channel {
 	c := Channel{
-		VHost:     vhost,
-		unacked:   make([]unackData, 0, QueueMaxLen),
-		Mutex:     &sync.Mutex{},
-		consumers: make(map[string]consumer),
+		VHost:      vhost,
+		unacked:    make([]unackData, 0, QueueMaxLen),
+		muUnacked:  &sync.RWMutex{},
+		muConsumer: &sync.RWMutex{},
+		consumers:  make(map[string]consumer),
 	}
 
 	return &c
@@ -50,8 +52,7 @@ func NewChannel(vhost *VHost) *Channel {
 // Consume starts a fake consumer of queue
 func (ch *Channel) Consume(queue, consumerName string, _ wabbit.Option) (<-chan wabbit.Delivery, error) {
 	var (
-		found bool
-		c     consumer
+		c consumer
 	)
 
 	if consumerName == "" {
@@ -64,15 +65,15 @@ func (ch *Channel) Consume(queue, consumerName string, _ wabbit.Option) (<-chan 
 		done:       make(chan bool),
 	}
 
-	ch.Lock()
+	ch.muConsumer.RLock()
 
-	if c, found = ch.consumers[consumerName]; found {
-		c.done <- true
+	if c2, found := ch.consumers[consumerName]; found {
+		c2.done <- true
 	}
 
 	ch.consumers[consumerName] = c
 
-	ch.Unlock()
+	ch.muConsumer.RUnlock()
 
 	q, ok := ch.queues[queue]
 
@@ -87,8 +88,8 @@ func (ch *Channel) Consume(queue, consumerName string, _ wabbit.Option) (<-chan 
 				close(c.deliveries)
 				return
 			case d := <-q.data:
-				c.deliveries <- d
 				ch.addUnacked(d, q)
+				c.deliveries <- d
 			}
 		}
 	}()
@@ -97,34 +98,36 @@ func (ch *Channel) Consume(queue, consumerName string, _ wabbit.Option) (<-chan 
 }
 
 func (ch *Channel) addUnacked(d wabbit.Delivery, q *Queue) {
-	ch.Lock()
-	defer ch.Unlock()
+	ch.muUnacked.Lock()
+	defer ch.muUnacked.Unlock()
 
 	ch.unacked = append(ch.unacked, unackData{d, q})
 }
 
 func (ch *Channel) enqueueUnacked() {
+	ch.muUnacked.Lock()
+	defer ch.muUnacked.Unlock()
+
 	for _, ud := range ch.unacked {
-		fmt.Printf("Enqueuing %s into queue %s\n", string(ud.d.Body()), ud.q.Name())
 		ud.q.data <- ud.d
-		fmt.Printf("Enqueued: %s\n", string(ud.d.Body()))
 	}
 
 	ch.unacked = make([]unackData, 0, QueueMaxLen)
 }
 
 func (ch *Channel) Close() error {
-	ch.Lock()
-	defer ch.Unlock()
+	ch.muConsumer.Lock()
+	defer ch.muConsumer.Unlock()
 
-	ch.enqueueUnacked()
-
-	for name, consumer := range ch.consumers {
-		fmt.Printf("Closing consumer goroutine...%s\n", name)
+	for _, consumer := range ch.consumers {
 		consumer.done <- true
-		fmt.Printf("Closed goroutine...%s\n", name)
 	}
 
 	ch.consumers = make(map[string]consumer)
+
+	// enqueue shall happens only after every consumer of this channel
+	// has stopped.
+	ch.enqueueUnacked()
+
 	return nil
 }
