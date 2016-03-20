@@ -220,7 +220,6 @@ func TestAckedMessagesAreCommited(t *testing.T) {
 	}
 
 	done := make(chan bool)
-	timer := time.After(5 * time.Second)
 
 	go func() {
 		data := <-deliveries
@@ -231,14 +230,16 @@ func TestAckedMessagesAreCommited(t *testing.T) {
 		}
 
 		data.Ack(false)
+
 		done <- true
 	}()
 
 	select {
 	case <-done:
-	case <-timer:
-		t.Error("No data delivered.")
 	}
+
+	// Closing the old channel, this should reenqueue everything not ack'ed
+	ch.Close()
 
 	// create another channel and get the same data back
 	ch2 := NewChannel(vh)
@@ -275,7 +276,7 @@ func TestAckedMessagesAreCommited(t *testing.T) {
 		return
 	}
 
-	timer = time.After(2 * time.Second)
+	timer := time.After(2 * time.Second)
 
 	go func() {
 		data := <-deliveries2

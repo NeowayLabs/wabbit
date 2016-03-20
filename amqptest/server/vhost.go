@@ -139,7 +139,7 @@ func (v *VHost) QueueUnbind(name, key, exchange string, _ wabbit.Option) error {
 // Publish push a new message to queue data channel.
 // The queue data channel is a buffered channel of length `QueueMaxLen`. If
 // the queue is full, this method will block until some messages are consumed.
-func (v *VHost) Publish(exc, route string, msg []byte, _ wabbit.Option) error {
+func (v *VHost) Publish(exc, route string, d *Delivery, _ wabbit.Option) error {
 	var (
 		exch Exchange
 		ok   bool
@@ -150,7 +150,7 @@ func (v *VHost) Publish(exc, route string, msg []byte, _ wabbit.Option) error {
 		return fmt.Errorf("Unknow exchange '%s'", exc)
 	}
 
-	err = exch.route(route, msg)
+	err = exch.route(route, d)
 
 	if err != nil {
 		return err

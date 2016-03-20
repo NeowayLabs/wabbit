@@ -101,7 +101,7 @@ func TestQueueBind(t *testing.T) {
 		return
 	}
 
-	err = nwExchange.route("process.data", []byte{})
+	err = nwExchange.route("process.data", NewDelivery(&Channel{}, []byte{}, 1))
 
 	if err != nil {
 		t.Error(err)
@@ -138,7 +138,7 @@ func TestBasicPublish(t *testing.T) {
 		return
 	}
 
-	err = vh.Publish("neoway", "process.data", []byte("teste"), nil)
+	err = vh.Publish("neoway", "process.data", NewDelivery(&Channel{}, []byte("teste"), 1), nil)
 
 	if err != nil {
 		t.Error(err)

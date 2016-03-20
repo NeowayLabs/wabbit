@@ -17,6 +17,8 @@ type (
 		muUnacked  *sync.RWMutex
 		consumers  map[string]consumer
 		muConsumer *sync.RWMutex
+
+		deliveryTagCounter uint64
 	}
 
 	unackData struct {
@@ -47,6 +49,14 @@ func NewChannel(vhost *VHost) *Channel {
 	}
 
 	return &c
+}
+
+func (ch *Channel) Publish(exc, route string, msg []byte, _ wabbit.Option) error {
+	d := NewDelivery(ch,
+		msg,
+		atomic.AddUint64(&ch.deliveryTagCounter, 1))
+
+	return ch.VHost.Publish(exc, route, d, nil)
 }
 
 // Consume starts a fake consumer of queue
@@ -113,6 +123,30 @@ func (ch *Channel) enqueueUnacked() {
 	}
 
 	ch.unacked = make([]unackData, 0, QueueMaxLen)
+}
+
+func (ch *Channel) Ack(tag uint64, multiple bool) error {
+	var (
+		pos int
+		ud  unackData
+	)
+
+	ch.muUnacked.Lock()
+	defer ch.muUnacked.Unlock()
+
+	if !multiple {
+		for pos, ud = range ch.unacked {
+			if ud.d.DeliveryTag() == tag {
+				break
+			}
+		}
+
+		ch.unacked = ch.unacked[:pos+copy(ch.unacked[pos:], ch.unacked[pos+1:])]
+	} else {
+		ch.unacked = make([]unackData, 0, QueueMaxLen)
+	}
+
+	return nil
 }
 
 func (ch *Channel) Close() error {

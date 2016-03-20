@@ -3,7 +3,7 @@ package server
 import "fmt"
 
 type Exchange interface {
-	route(route string, message []byte) error
+	route(route string, d *Delivery) error
 	addBinding(route string, q *Queue)
 	delBinding(route string)
 }
@@ -28,10 +28,9 @@ func (t *TopicExchange) delBinding(route string) {
 	delete(t.bindings, route)
 }
 
-func (t *TopicExchange) route(route string, msg []byte) error {
+func (t *TopicExchange) route(route string, d *Delivery) error {
 	for bname, q := range t.bindings {
 		if topicMatch(bname, route) {
-			d := NewDelivery(msg)
 			q.data <- d
 			return nil
 		}
@@ -60,9 +59,9 @@ func (d *DirectExchange) delBinding(route string) {
 	delete(d.bindings, route)
 }
 
-func (d *DirectExchange) route(route string, msg []byte) error {
+func (d *DirectExchange) route(route string, delivery *Delivery) error {
 	if q, ok := d.bindings[route]; ok {
-		q.data <- NewDelivery(msg)
+		q.data <- delivery
 		return nil
 	}
 
