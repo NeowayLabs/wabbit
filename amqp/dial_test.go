@@ -1,6 +1,7 @@
 package amqp
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"testing"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/fsouza/go-dockerclient"
 	"github.com/tiago4orion/conjure"
+	"github.com/tiago4orion/wabbit"
 )
 
 var (
@@ -101,7 +103,6 @@ dial:
 	return nil
 }
 
-/*
 // TestDial test a simple connection to rabbitmq.
 // If the rabbitmq disconnects will not be tested here!
 func TestDial(t *testing.T) {
@@ -223,4 +224,3 @@ func TestConnMock(t *testing.T) {
 		t.Error("Maybe wabbit.Conn interface does not mock amqp.Conn correctly")
 	}
 }
-*/
