@@ -5,6 +5,7 @@ import (
 
 	"github.com/streadway/amqp"
 	"github.com/tiago4orion/wabbit"
+	"github.com/tiago4orion/wabbit/utils"
 )
 
 // Channel is a wrapper channel structure for amqp.Channel
@@ -13,50 +14,20 @@ type Channel struct {
 }
 
 func (ch *Channel) Publish(exc, route string, msg []byte, opt wabbit.Option) error {
-	var (
-		headers         = amqp.Table{}
-		contentType     = "text/plain"
-		contentEncoding = ""
-		deliveryMode    = amqp.Transient
-		priority        = uint8(0)
-	)
+	amqpOpt, err := utils.ConvertOpt(opt)
 
-	if opt != nil {
-		if h, ok := opt["headers"].(amqp.Table); ok {
-			headers = h
-		}
-
-		if c, ok := opt["contentType"].(string); ok {
-			contentType = c
-		}
-
-		if c, ok := opt["contentEncoding"].(string); ok {
-			contentEncoding = c
-		}
-
-		if d, ok := opt["deliveryMode"].(uint8); ok {
-			deliveryMode = d
-		}
-
-		if p, ok := opt["priority"].(uint8); ok {
-			priority = p
-		}
+	if err != nil {
+		return err
 	}
+
+	amqpOpt.Body = msg
 
 	return ch.Channel.Publish(
 		exc,   // publish to an exchange
 		route, // routing to 0 or more queues
 		false, // mandatory
 		false, // immediate
-		amqp.Publishing{
-			Headers:         headers,
-			ContentType:     contentType,
-			ContentEncoding: contentEncoding,
-			Body:            []byte(msg),
-			DeliveryMode:    deliveryMode, // 1=non-persistent, 2=persistent
-			Priority:        priority,     // 0-9
-			// a bunch of application/implementation-specific fields
-		},
+		amqpOpt,
 	)
 }
 
