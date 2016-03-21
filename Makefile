@@ -1,5 +1,5 @@
 
 
 
-check:
-	go test -v ./...
+test:
+	./hack/check.sh
