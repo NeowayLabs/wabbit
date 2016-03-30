@@ -125,8 +125,6 @@ func (conn *Conn) AutoRedial(outChan chan wabbit.Error, done chan bool) {
 				goto lattempts
 			}
 
-			attempts = 0
-
 			// enabled AutoRedial on the new connection
 			conn.AutoRedial(outChan, done)
 			done <- true
