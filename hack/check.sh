@@ -25,7 +25,7 @@ if [ "x${TEST_DIRECTORY:0:1}" != "x." ]; then
 	TEST_DIRECTORY="./$TEST_DIRECTORY"
 fi
 
-DOCKERPATH="$(which docker || echo 'not found')"
+DOCKERPATH="$(which docker 2>/dev/null 1>/dev/null|| echo 'not found')"
 TAGS=""
 
 if [ "${DOCKERPATH}" != "not found" ]; then

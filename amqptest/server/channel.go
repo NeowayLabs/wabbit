@@ -154,7 +154,7 @@ func (ch *Channel) Ack(tag uint64, multiple bool) error {
 	} else {
 		ackMessages := make([]uint64, 0, QueueMaxLen)
 
-		for pos, ud = range ch.unacked {
+		for _, ud = range ch.unacked {
 			udTag := ud.d.DeliveryTag()
 
 			if udTag <= tag {
@@ -193,7 +193,7 @@ func (ch *Channel) Nack(tag uint64, multiple bool, requeue bool) error {
 	} else {
 		nackMessages := make([]uint64, 0, QueueMaxLen)
 
-		for pos, ud = range ch.unacked {
+		for _, ud = range ch.unacked {
 			udTag := ud.d.DeliveryTag()
 
 			if udTag <= tag {
