@@ -1,3 +1,5 @@
+# Wabbit - Go AMQP Mocking Library
+
 [![Travis CI](https://travis-ci.org/NeowayLabs/wabbit.svg?branch=master)](https://travis-ci.org/NeowayLabs/wabbit)
 [![Coverage](http://codecov.io/github/NeowayLabs/wabbit/coverage.svg?branch=master)](http://codecov.io/github/NeowayLabs/wabbit)
 [![GoDoc](https://godoc.org/github.com/NeowayLabs/wabbit?status.svg)](https://godoc.org/github.com/NeowayLabs/wabbit)
