@@ -1,16 +1,7 @@
-#+CAPTION: Travis-CI status
-#+NAME: travis-build-status
-[[https://travis-ci.org/NeowayLabs/wabbit][https://travis-ci.org/NeowayLabs/wabbit.svg?branch=master]]
+#+Title:  Wabbit - Go AMQP Mocking Library
 
-#+CAPTION: Code coverage status
-#+NAME: codecov-status
-[[http://codecov.io/github/NeowayLabs/wabbit][http://codecov.io/github/NeowayLabs/wabbit/coverage.svg?branch=master]]
-
-#+CAPTION: GoDoc
-#+NAME: GoDoc
-[[https://godoc.org/github.com/NeowayLabs/wabbit][https://godoc.org/github.com/NeowayLabs/wabbit?status.svg]]
-
-* wabbit
+[[https://travis-ci.org/NeowayLabs/wabbit][https://travis-ci.org/NeowayLabs/wabbit.svg?branch=master]] [[http://codecov.io/github/NeowayLabs/wabbit][http://codecov.io/github/NeowayLabs/wabbit/coverage.svg?branch=master]]
+[[https://godoc.org/github.com/NeowayLabs/wabbit][https://godoc.org/github.com/NeowayLabs/wabbit?status.svg]] [[https://goreportcard.com/github.com/NeowayLabs/wabbit][https://goreportcard.com/badge/github.com/NeowayLabs/wabbit]]
 
 > Elmer Fudd: Shhh. Be vewy vewy quiet, I'm hunting wabbits
 
@@ -96,7 +87,5 @@ broker3.Start()
 It's a very straightforward implementation that need a lot of
 improvements yet. Take careful when using it.
 
-KILL DA WABBIT!!!!
-https://www.youtube.com/watch?v=QqC_YdG7GtM
 
 []'s
