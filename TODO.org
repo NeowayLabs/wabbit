@@ -1,0 +1,10 @@
+* Wabbit Project Planning
+** DONE Add support for ack, nack and reject messages
+   :LOGBOOK:
+   CLOCK: [2016-03-20 Sun 07:31]--[2016-03-20 Sun 19:01] => 11:30
+   :END:
+** TODO Improve documentation
+   :LOGBOOK:
+   CLOCK: [2016-03-30 Wed 11:12]--[2016-03-30 Wed 11:26] =>  0:14
+   :END:
+** TODO Add more integration tests with real rabbitmq

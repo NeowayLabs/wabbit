@@ -70,6 +70,29 @@ func TestChannelCreation(t *testing.T) {
 }
 #+END_SRC
 
+    The package /amqptest/server/ implements a mock AMQP server and it
+    can be used to simulate network partitions or broker crashs. To
+    create a new server instance use /server.NewServer/ passing any
+    amqpuri. You can create more than one server, but they need to
+    have different amqpuris. Example below:
+
+#+BEGIN_SRC go
+broker1 := server.NewServer("amqp://localhost:5672/%2f")
+broker2 := server.NewServer("amqp://192.168.10.165:5672/%2f")
+broker3 := server.NewServer("amqp://192.168.10.169:5672/%2f")
+
+broker1.Start()
+broker2.Start()
+broker3.Start()
+#+END_SRC
+
+    Calling NewServer with same amqpuri will return the same server
+    instance.
+
+    Use /broker.Stop()/ to abruptly stop the amqp server.
+
+    *There's no fake clustering support yet (maybe never)*
+
 It's a very straightforward implementation that need a lot of
 improvements yet. Take careful when using it.
 
