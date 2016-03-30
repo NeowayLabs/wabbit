@@ -1,7 +1,9 @@
 #+Title:  Wabbit - Go AMQP Mocking Library
 
-[[https://travis-ci.org/NeowayLabs/wabbit][https://travis-ci.org/NeowayLabs/wabbit.svg?branch=master]] [[http://codecov.io/github/NeowayLabs/wabbit][http://codecov.io/github/NeowayLabs/wabbit/coverage.svg?branch=master]]
-[[https://godoc.org/github.com/NeowayLabs/wabbit][https://godoc.org/github.com/NeowayLabs/wabbit?status.svg]] [[https://goreportcard.com/github.com/NeowayLabs/wabbit][https://goreportcard.com/badge/github.com/NeowayLabs/wabbit]]
+[[https://travis-ci.org/NeowayLabs/wabbit][https://travis-ci.org/NeowayLabs/wabbit.svg?branch=master]]
+[[http://codecov.io/github/NeowayLabs/wabbit][http://codecov.io/github/NeowayLabs/wabbit/coverage.svg?branch=master]]
+[[https://godoc.org/github.com/NeowayLabs/wabbit][https://godoc.org/github.com/NeowayLabs/wabbit?status.svg]]
+[[https://goreportcard.com/badge/github.com/NeowayLabs/wabbit][https://goreportcard.com/report/github.com/NeowayLabs/wabbit]]
 
 > Elmer Fudd: Shhh. Be vewy vewy quiet, I'm hunting wabbits
 
