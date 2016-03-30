@@ -7,10 +7,10 @@ import (
 	"github.com/streadway/amqp"
 )
 
-type Xstring []string
+type xstring []string
 
 var (
-	amqpOptions Xstring = []string{
+	amqpOptions xstring = []string{
 		"headers",
 		"contentType",
 		"contentEncoding",
@@ -19,7 +19,7 @@ var (
 	}
 )
 
-func (s Xstring) Contains(key string) bool {
+func (s xstring) Contains(key string) bool {
 	for _, v := range s {
 		if key == v {
 			return true

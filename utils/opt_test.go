@@ -16,19 +16,19 @@ func TestConvertOptDefaults(t *testing.T) {
 	}
 
 	if opt.ContentType != "text/plain" {
-		t.Error("Invalid opt content type: %s", opt.ContentType)
+		t.Errorf("Invalid opt content type: %s", opt.ContentType)
 	}
 
 	if opt.ContentEncoding != "" {
-		t.Error("Invalid opt encoding: %s", opt.ContentEncoding)
+		t.Errorf("Invalid opt encoding: %s", opt.ContentEncoding)
 	}
 
 	if opt.DeliveryMode != amqp.Transient {
-		t.Error("Invalid default delivery mode: %d\n", opt.DeliveryMode)
+		t.Errorf("Invalid default delivery mode: %d\n", opt.DeliveryMode)
 	}
 
 	if opt.Priority != uint8(0) {
-		t.Error("Invalid default priority: %d\n", opt.Priority)
+		t.Errorf("Invalid default priority: %d\n", opt.Priority)
 	}
 
 	if len(opt.Headers) != 0 {

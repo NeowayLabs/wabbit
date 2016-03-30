@@ -17,7 +17,7 @@ type Conn struct {
 	attempts uint8
 }
 
-// Dial to rabbitmq
+// Dial to AMQP broker
 func Dial(uri string) (*Conn, error) {
 	conn := &Conn{}
 
@@ -43,6 +43,8 @@ func Dial(uri string) (*Conn, error) {
 	return conn, nil
 }
 
+// NotifyClose registers a listener for close events.
+// For more information see: https://godoc.org/github.com/streadway/amqp#Connection.NotifyClose
 func (conn *Conn) NotifyClose(c chan wabbit.Error) chan wabbit.Error {
 	var (
 		amqpErr2 chan *amqp.Error
