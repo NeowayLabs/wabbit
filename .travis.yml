@@ -11,13 +11,12 @@ install:
   - go get -d -v ./...
   - go build
 script:
-  - go get golang.org/x/tools/cmd/vet
   - go get github.com/axw/gocov/gocov
   - go get github.com/mattn/goveralls
-  - go get -u github.com/golang/lint/golint
+  - go get github.com/golang/lint/golint
   - go get github.com/fsouza/go-dockerclient
   - go get github.com/tiago4orion/conjure
-  - if ! go get code.google.com/p/go.tools/cmd/cover; then go get golang.org/x/tools/cmd/cover; fi
+  - go get golang.org/x/tools/cmd/cover
   - hack/check.sh
 #  - goveralls -coverprofile=coverage.txt -service=travis-ci
 before_install:
