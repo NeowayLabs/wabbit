@@ -5,7 +5,7 @@ services:
   - docker
 
 go:
-  - tip
+  - 1.6
   - 1.5
 install:
   - go get -d -v ./...
