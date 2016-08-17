@@ -146,25 +146,41 @@ func (ch *Channel) Ack(tag uint64, multiple bool) error {
 	)
 
 	if !multiple {
+		ch.muUnacked.Lock()
+		defer ch.muUnacked.Unlock()
+
+		found := false
 		for pos, ud = range ch.unacked {
 			if ud.d.DeliveryTag() == tag {
+				found = true
 				break
 			}
 		}
 
-		ch.muUnacked.Lock()
-		ch.unacked = ch.unacked[:pos+copy(ch.unacked[pos:], ch.unacked[pos+1:])]
-		ch.muUnacked.Unlock()
+		if !found {
+			return fmt.Errorf("Delivery tag %d not found", tag)
+		}
 
+		ch.unacked = ch.unacked[:pos+copy(ch.unacked[pos:], ch.unacked[pos+1:])]
 	} else {
 		ackMessages := make([]uint64, 0, QueueMaxLen)
 
+		ch.muUnacked.Lock()
+
+		found := false
 		for _, ud = range ch.unacked {
 			udTag := ud.d.DeliveryTag()
 
 			if udTag <= tag {
+				found = true
 				ackMessages = append(ackMessages, udTag)
 			}
+		}
+
+		ch.muUnacked.Unlock()
+
+		if !found {
+			return fmt.Errorf("Delivery tag %d not found", tag)
 		}
 
 		for _, udTag := range ackMessages {

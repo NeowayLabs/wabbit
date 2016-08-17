@@ -190,14 +190,14 @@ func TestAutoRedial(t *testing.T) {
 	}()
 
 	select {
-	case <-time.After(5 * time.Second):
+	case <-time.After(10 * time.Second):
 		err = errors.New("Failed to reconnect. Timeout exceeded")
 	case <-done:
 		err = nil
 	}
 
 	if err != nil {
-		t.Errorf("Client doesn't reconnect in 3 seconds: %s", err.Error())
+		t.Errorf("Client doesn't reconnect in 10 seconds: %s", err.Error())
 		return
 	}
 
