@@ -291,6 +291,93 @@ func TestAckedMessagesAreCommited(t *testing.T) {
 	}
 }
 
+func TestPublishThenConsumeAck(t *testing.T) {
+	vh := NewVHost("/")
+
+	ch := NewChannel(vh)
+
+	err := ch.ExchangeDeclare("neoway", "topic", nil)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	q, err := ch.QueueDeclare("data-queue", nil)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = ch.QueueBind("data-queue", "process.data", "neoway", nil)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = ch.Publish("neoway", "process.data", []byte("teste"), nil)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = ch.Close()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	// start consumer
+	ch2 := NewChannel(vh)
+
+	q, err = ch2.QueueDeclare("data-queue", nil)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	deliveries, err := ch2.Consume(
+		q.Name(),
+		"tag-teste",
+		nil,
+	)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	done := make(chan bool)
+
+	go func() {
+		data := <-deliveries
+
+		if string(data.Body()) != "teste" {
+			t.Errorf("Failed to receive  message from published specified route")
+			return
+		}
+
+		data.Ack(false)
+
+		done <- true
+	}()
+
+	select {
+	case <-done:
+	}
+
+	err = ch2.Close()
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+}
+
 func TestNAckedMessagesAreRequeued(t *testing.T) {
 	vh := NewVHost("/")
 

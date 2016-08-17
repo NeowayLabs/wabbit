@@ -98,6 +98,11 @@ func (ch *Channel) Consume(queue, consumerName string, _ wabbit.Option) (<-chan 
 				close(c.deliveries)
 				return
 			case d := <-q.data:
+				// since we keep track of unacked messages for
+				// the channel, we need to rebind the delivery
+				// to the consumer channel.
+				d = NewDelivery(ch, d.Body(), d.DeliveryTag())
+
 				ch.addUnacked(d, q)
 
 				// sub-select required for cases when
