@@ -20,6 +20,9 @@ type (
 		Nack(tag uint64, multiple bool, requeue bool) error
 		Reject(tag uint64, requeue bool) error
 
+		Confirm(noWait bool) error
+		NotifyPublish(confirm chan Confirmation) chan Confirmation
+
 		Cancel(consumer string, noWait bool) error
 		ExchangeDeclare(name, kind string, opt Option) error
 		QueueDeclare(name string, args Option) (Queue, error)
@@ -53,6 +56,12 @@ type (
 		Body() []byte
 		DeliveryTag() uint64
 		ConsumerTag() string
+	}
+
+	// Confirmation is an interface to confrimation messages
+	Confirmation interface {
+		Ack() bool
+		DeliveryTag() uint64
 	}
 
 	// Error is an interface for AMQP errors

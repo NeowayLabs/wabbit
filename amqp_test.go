@@ -47,7 +47,23 @@ func TestBasicUsage(t *testing.T) {
 func pub(conn wabbit.Conn, t *testing.T, done chan bool) {
 	var (
 		publisher wabbit.Publisher
+		confirm   chan wabbit.Confirmation
 	)
+
+	// helper function to verify publisher confirms
+	checkConfirm := func(expected uint64) error {
+		c := <-confirm
+
+		if !c.Ack() {
+			return fmt.Errorf("confirmation ack should be true")
+		}
+
+		if c.DeliveryTag() != expected {
+			return fmt.Errorf("confirmation delivery tag should be %d (got: %d)", expected, c.DeliveryTag())
+		}
+
+		return nil
+	}
 
 	channel, err := conn.Channel()
 
@@ -71,6 +87,14 @@ func pub(conn wabbit.Conn, t *testing.T, done chan bool) {
 		goto PubError
 	}
 
+	err = channel.Confirm(false)
+
+	if err != nil {
+		goto PubError
+	}
+
+	confirm = channel.NotifyPublish(make(chan wabbit.Confirmation, 1))
+
 	publisher, err = amqptest.NewPublisher(conn, channel)
 
 	if err != nil {
@@ -83,13 +107,31 @@ func pub(conn wabbit.Conn, t *testing.T, done chan bool) {
 		goto PubError
 	}
 
+	err = checkConfirm(1)
+
+	if err != nil {
+		goto PubError
+	}
+
 	err = publisher.Publish("test", "wabbit-test-route", []byte("msg2"), nil)
 
 	if err != nil {
 		goto PubError
 	}
 
+	err = checkConfirm(2)
+
+	if err != nil {
+		goto PubError
+	}
+
 	err = publisher.Publish("test", "wabbit-test-route", []byte("msg3"), nil)
+
+	if err != nil {
+		goto PubError
+	}
+
+	err = checkConfirm(3)
 
 	if err != nil {
 		goto PubError
