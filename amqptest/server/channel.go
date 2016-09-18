@@ -19,6 +19,11 @@ type (
 		muConsumer *sync.RWMutex
 
 		deliveryTagCounter uint64
+
+		confirm bool
+
+		publishListeners   []chan wabbit.Confirmation
+		muPublishListeners *sync.RWMutex
 	}
 
 	unackData struct {
@@ -41,14 +46,46 @@ func uniqueConsumerTag() string {
 
 func NewChannel(vhost *VHost) *Channel {
 	c := Channel{
-		VHost:      vhost,
-		unacked:    make([]unackData, 0, QueueMaxLen),
-		muUnacked:  &sync.RWMutex{},
-		muConsumer: &sync.RWMutex{},
-		consumers:  make(map[string]consumer),
+		VHost:              vhost,
+		unacked:            make([]unackData, 0, QueueMaxLen),
+		muUnacked:          &sync.RWMutex{},
+		muConsumer:         &sync.RWMutex{},
+		consumers:          make(map[string]consumer),
+		muPublishListeners: &sync.RWMutex{},
 	}
 
 	return &c
+}
+
+func (ch *Channel) Confirm(noWait bool) error {
+	ch.confirm = true
+
+	return nil
+}
+
+func (ch *Channel) NotifyPublish(confirm chan wabbit.Confirmation) chan wabbit.Confirmation {
+	aux := make(chan wabbit.Confirmation, 2<<8)
+
+	ch.muPublishListeners.Lock()
+	ch.publishListeners = append(ch.publishListeners, aux)
+	ch.muPublishListeners.Unlock()
+
+	// aux is set to the maximum size of a queue: 512.
+	// In theory it is possible that a publisher could deliver >512 messages
+	// on a channel by sending to multiple queues, in which case Publish()
+	// will block trying to send confirmations. However this is a pathological
+	// case which can be ignored since there should be an attached listener
+	// on the other end of the confirm channel. In any case, a buffered queue,
+	// while seemingly inefficient is a good enough solution to make sure
+	// Publish() doesn't block.
+	go func() {
+		for c := range aux {
+			confirm <- c
+		}
+		close(confirm)
+	}()
+
+	return confirm
 }
 
 func (ch *Channel) Publish(exc, route string, msg []byte, _ wabbit.Option) error {
@@ -56,7 +93,20 @@ func (ch *Channel) Publish(exc, route string, msg []byte, _ wabbit.Option) error
 		msg,
 		atomic.AddUint64(&ch.deliveryTagCounter, 1))
 
-	return ch.VHost.Publish(exc, route, d, nil)
+	err := ch.VHost.Publish(exc, route, d, nil)
+
+	if err != nil {
+		return err
+	}
+
+	if ch.confirm {
+		confirm := Confirmation{ch.deliveryTagCounter, true}
+		for _, l := range ch.publishListeners {
+			l <- confirm
+		}
+	}
+
+	return nil
 }
 
 // Consume starts a fake consumer of queue
@@ -247,6 +297,13 @@ func (ch *Channel) Close() error {
 	// enqueue shall happens only after every consumer of this channel
 	// has stopped.
 	ch.enqueueUnacked()
+
+	ch.muPublishListeners.Lock()
+	defer ch.muPublishListeners.Unlock()
+	for _, c := range ch.publishListeners {
+		close(c)
+	}
+	ch.publishListeners = []chan wabbit.Confirmation{}
 
 	return nil
 }

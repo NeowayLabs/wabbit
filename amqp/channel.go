@@ -31,6 +31,24 @@ func (ch *Channel) Publish(exc, route string, msg []byte, opt wabbit.Option) err
 	)
 }
 
+func (ch *Channel) Confirm(noWait bool) error {
+	return ch.Channel.Confirm(noWait)
+}
+
+func (ch *Channel) NotifyPublish(confirm chan wabbit.Confirmation) chan wabbit.Confirmation {
+	amqpConfirms := ch.Channel.NotifyPublish(make(chan amqp.Confirmation, cap(confirm)))
+
+	go func() {
+		for c := range amqpConfirms {
+			confirm <- Confirmation{c}
+		}
+
+		close(confirm)
+	}()
+
+	return confirm
+}
+
 func (ch *Channel) Consume(queue, consumer string, opt wabbit.Option) (<-chan wabbit.Delivery, error) {
 	var (
 		autoAck, exclusive, noLocal, noWait bool
