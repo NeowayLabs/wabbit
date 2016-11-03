@@ -248,10 +248,16 @@ func (ch *Channel) Nack(tag uint64, multiple bool, requeue bool) error {
 	)
 
 	if !multiple {
+		found := false
 		for pos, ud = range ch.unacked {
 			if ud.d.DeliveryTag() == tag {
+				found = true
 				break
 			}
+		}
+
+		if !found {
+			return fmt.Errorf("Delivery tag %d not found", tag)
 		}
 
 		if requeue {
