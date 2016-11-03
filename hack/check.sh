@@ -14,7 +14,7 @@ GO="go"
 # Automatic checks
 test -z "$(gofmt -l -w .     | tee /dev/stderr)"
 #test -z "$(goimports -l -w . | tee /dev/stderr)"
-test -z "$(golint .          | tee /dev/stderr)"
+#test -z "$(golint .          | tee /dev/stderr)"
 #$GO vet ./...
 
 # Run test coverage on each subdirectories and merge the coverage profile.
