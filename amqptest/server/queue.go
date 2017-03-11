@@ -1,6 +1,9 @@
 package server
 
-import "github.com/NeowayLabs/wabbit"
+import (
+	"fmt"
+	"github.com/NeowayLabs/wabbit"
+)
 
 const (
 	QueueMaxLen = 2 << 8
@@ -28,4 +31,13 @@ func (q *Queue) Name() string {
 
 func (q *Queue) Messages() int {
 	return 0
+}
+
+func (q *Queue) dispatch(route string, delivery *Delivery) error {
+	if q.data != nil {
+		q.data <- delivery
+		return nil
+	}
+
+	return fmt.Errorf("No data in queue: %s", route)
 }

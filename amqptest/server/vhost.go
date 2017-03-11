@@ -129,20 +129,44 @@ func (v *VHost) QueueUnbind(name, key, exchange string, _ wabbit.Option) error {
 // the queue is full, this method will block until some messages are consumed.
 func (v *VHost) Publish(exc, route string, d *Delivery, _ wabbit.Option) error {
 	var (
-		exch Exchange
-		ok   bool
-		err  error
+		err error
 	)
 
-	if exch, ok = v.exchanges[exc]; !ok {
-		return fmt.Errorf("Unknow exchange '%s'", exc)
+	if exc != "" {
+		err = publishExchange(v, exc, route, d)
+	} else {
+		err = publishWorkerQueue(v, route, d)
 	}
-
-	err = exch.route(route, d)
 
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func publishExchange(v *VHost, exc, route string, d *Delivery) error {
+	var (
+		exch Exchange
+		ok   bool
+	)
+
+	if exch, ok = v.exchanges[exc]; !ok {
+		return fmt.Errorf("Unknow exchange '%s'", exc)
+	}
+
+	return exch.route(route, d)
+}
+
+func publishWorkerQueue(v *VHost, queueName string, d *Delivery) error {
+	var (
+		qch *Queue
+		ok  bool
+	)
+
+	if qch, ok = v.queues[queueName]; !ok {
+		return fmt.Errorf("Unknow queue '%s'", queueName)
+	}
+
+	return qch.dispatch(queueName, d)
 }
