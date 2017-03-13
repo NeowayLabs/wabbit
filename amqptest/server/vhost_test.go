@@ -35,6 +35,18 @@ func TestQueueDeclare(t *testing.T) {
 	if q.Messages() != 0 || q.Consumers() != 0 {
 		t.Errorf("Invalid number of messages or consumers")
 	}
+
+	nwExchange, ok := vh.exchanges[""].(*DirectExchange)
+
+	if !ok {
+		t.Errorf("Exchange neoway not created")
+		return
+	}
+
+	if len(nwExchange.bindings) != 1 {
+		t.Errorf("Binding not created")
+		return
+	}
 }
 
 func TestBasicExchangeDeclare(t *testing.T) {
