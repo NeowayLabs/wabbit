@@ -53,6 +53,10 @@ func NewDirectExchange(name string) *DirectExchange {
 }
 
 func (d *DirectExchange) addBinding(route string, q *Queue) {
+	if d.bindings == nil {
+		d.bindings = make(map[string]*Queue)
+	}
+
 	d.bindings[route] = q
 }
 

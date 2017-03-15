@@ -57,6 +57,44 @@ func TestBasicConsumer(t *testing.T) {
 	}
 }
 
+func TestWorkerQueue(t *testing.T) {
+	vh := NewVHost("/")
+
+	ch := NewChannel(vh)
+
+	q, err := ch.QueueDeclare("data-queue", nil)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	deliveries, err := ch.Consume(
+		q.Name(),
+		"",
+		nil,
+	)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = ch.Publish("", q.Name(), []byte("teste"), nil)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	data := <-deliveries
+
+	if string(data.Body()) != "teste" {
+		t.Errorf("Failed to publish message to specified queue")
+		return
+	}
+}
+
 func TestUnackedMessagesArentLost(t *testing.T) {
 	vh := NewVHost("/")
 

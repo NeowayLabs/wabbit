@@ -79,6 +79,13 @@ func (v *VHost) QueueDeclare(name string, args wabbit.Option) (wabbit.Queue, err
 	q := NewQueue(name)
 
 	v.queues[name] = q
+
+	err := v.QueueBind(name, name, "", nil)
+
+	if err != nil {
+		return nil, err
+	}
+
 	return q, nil
 }
 
