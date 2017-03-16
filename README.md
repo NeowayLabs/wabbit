@@ -14,7 +14,11 @@ wrapper).
 
 What are the advantages of this?
 
-**Testing**
+### Usage
+
+[How to use ?](/_examples)
+
+### Testing
 
 This package have an AMQP interface and two possible implementations:
 
