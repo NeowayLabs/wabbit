@@ -30,44 +30,46 @@ the *httptest* for testing, when using wabbit is recommended to use the
 *wabbit/amqp* package on your software and *wabbit/amqptest* in your
 tests. Simple test example:
 
-    package main
+```go
+package main
 
-    import (
-    	"testing"
-    	"github.com/NeowayLabs/wabbit/amqptest"
-    	"github.com/NeowayLabs/wabbit/amqptest/server"
-    	"github.com/NeowayLabs/wabbit/amqp"
-    )
+import (
+	"testing"
+	"github.com/NeowayLabs/wabbit/amqptest"
+	"github.com/NeowayLabs/wabbit/amqptest/server"
+	"github.com/NeowayLabs/wabbit/amqp"
+)
 
 
-    func TestChannelCreation(t *testing.T) {
-    	mockConn, err := amqptest.Dial("amqp://localhost:5672/%2f") // will fail,
+func TestChannelCreation(t *testing.T) {
+	mockConn, err := amqptest.Dial("amqp://localhost:5672/%2f") // will fail,
 
-    	if err == nil {
-    		t.Error("This shall fail, because no fake amqp server is running...")
-    	}
+	if err == nil {
+		t.Error("This shall fail, because no fake amqp server is running...")
+	}
 
-    	fakeServer := server.NewServer("amqp://localhost:5672/%2f")
-    	fakeServer.Start()
+	fakeServer := server.NewServer("amqp://localhost:5672/%2f")
+	fakeServer.Start()
 
-    	mockConn, err = amqptest.Dial("amqp://localhost:5672/%2f") // now it works =D
+	mockConn, err = amqptest.Dial("amqp://localhost:5672/%2f") // now it works =D
 
-    	if err != nil {
-    		t.Error(err)
-    	}
+	if err != nil {
+		t.Error(err)
+	}
 
-    	//Now you can use mockConn as a real amqp connection.
-    	channel, err := mockConn.Channel()
+	//Now you can use mockConn as a real amqp connection.
+	channel, err := mockConn.Channel()
 
-    	// ...
-    }
-
+    // ...
+}
+```
 The package *amqptest/server* implements a mock AMQP server and it
 can be used to simulate network partitions or broker crashs. To
 create a new server instance use *server.NewServer* passing any
 amqpuri. You can create more than one server, but they need to
 have different amqpuris. Example below:
 
+```go
     broker1 := server.NewServer("amqp://localhost:5672/%2f")
     broker2 := server.NewServer("amqp://192.168.10.165:5672/%2f")
     broker3 := server.NewServer("amqp://192.168.10.169:5672/%2f")
@@ -75,7 +77,7 @@ have different amqpuris. Example below:
     broker1.Start()
     broker2.Start()
     broker3.Start()
-
+```
 Calling NewServer with same amqpuri will return the same server
 instance.
 
