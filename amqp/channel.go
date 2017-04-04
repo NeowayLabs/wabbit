@@ -105,7 +105,8 @@ func (ch *Channel) Consume(queue, consumer string, opt wabbit.Option) (<-chan wa
 
 	go func() {
 		for d := range amqpd {
-			deliveries <- &Delivery{&d}
+			delivery := d
+			deliveries <- &Delivery{&delivery}
 		}
 
 		close(deliveries)
