@@ -22,7 +22,7 @@ What are the advantages of this?
 
 This package have an AMQP interface and two possible implementations:
 
--   wabbit/amqp - Bypass to [streadwat/amqp](https://github.com/streadway/amqp)
+-   wabbit/amqp - Bypass to [streadway/amqp](https://github.com/streadway/amqp)
 -   wabbit/amqptest
 
 In the same way you can use the http package in your software and use
