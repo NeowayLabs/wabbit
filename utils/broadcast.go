@@ -34,6 +34,17 @@ func (b *ErrBroadcast) Add(c chan<- wabbit.Error) {
 	b.listeners = append(b.listeners, c)
 }
 
+// Delete the listener
+func (b *ErrBroadcast) Delete(c chan<- wabbit.Error) {
+	i, ok := b.findIndex(c)
+	if !ok {
+		return
+	}
+	b.listeners[i] = b.listeners[len(b.listeners)-1]
+	b.listeners[len(b.listeners)-1] = nil
+	b.listeners = b.listeners[:len(b.listeners)-1]
+}
+
 // Write to subscribed channels
 func (b *ErrBroadcast) Write(err wabbit.Error) {
 	b.c <- err
@@ -43,4 +54,13 @@ func (b *ErrBroadcast) spread(err wabbit.Error) {
 	for _, l := range b.listeners {
 		l <- err
 	}
+}
+
+func (b *ErrBroadcast) findIndex(c chan<- wabbit.Error) (int, bool) {
+	for i := range b.listeners {
+		if b.listeners[i] == c {
+			return i, true
+		}
+	}
+	return -1, false
 }
