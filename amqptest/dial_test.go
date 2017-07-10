@@ -2,11 +2,13 @@ package amqptest
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 	"time"
 
 	"github.com/NeowayLabs/wabbit"
 	"github.com/NeowayLabs/wabbit/amqptest/server"
+	"github.com/pborman/uuid"
 )
 
 var rabbitmqPort = "35672"
@@ -130,5 +132,47 @@ func TestConnMock(t *testing.T) {
 
 	if conn == nil {
 		t.Error("Maybe wabbit.Conn interface does not mock amqp.Conn correctly")
+	}
+}
+
+func TestConnCloseBeforeServerStop(t *testing.T) {
+	tests := []struct {
+		name  string
+		sleep time.Duration
+	}{
+		{
+			name:  "10 ms sleep before server.Stop()",
+			sleep: 10 * time.Millisecond,
+		},
+		{
+			name:  "100 ms sleep before server.Stop()",
+			sleep: 100 * time.Millisecond,
+		},
+		{
+			name:  "1000 ms sleep before server.Stop()",
+			sleep: time.Second,
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc // capture range variable.
+		t.Run(tc.name, func(t *testing.T) {
+			// Start a server.
+			uri := fmt.Sprintf("amqp://guest:guest@localhost:35672/%s",
+				uuid.New())
+			server := server.NewServer(uri)
+			server.Start()
+			defer server.Stop()
+
+			// Dial to the server.
+			conn, err := Dial(uri)
+			if err != nil {
+				t.Fatalf("Dial(): %v", err)
+			}
+			conn.Close()
+
+			// Sleep before stopping the server.
+			time.Sleep(tc.sleep)
+		})
 	}
 }

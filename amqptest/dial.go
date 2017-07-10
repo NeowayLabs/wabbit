@@ -17,6 +17,7 @@ const (
 
 // Conn is the fake AMQP connection
 type Conn struct {
+	amqpuri       string
 	isConnected   bool
 	connID        string
 	errSpread     *utils.ErrBroadcast
@@ -33,6 +34,7 @@ type Conn struct {
 // returns the established connection or error if something goes wrong
 func Dial(amqpuri string) (*Conn, error) {
 	conn := &Conn{
+		amqpuri:    amqpuri,
 		errSpread:  utils.NewErrBroadcast(),
 		errChan:    make(chan wabbit.Error),
 		defErrDone: make(chan bool),
@@ -63,7 +65,19 @@ func Dial(amqpuri string) (*Conn, error) {
 				select {
 				case <-conn.errChan:
 				case <-conn.defErrDone:
-					return
+					conn.mu.Lock()
+					if conn.hasAutoRedial {
+						conn.mu.Unlock()
+						return
+					}
+					conn.mu.Unlock()
+					// Drain the errChan channel before
+					// the exit.
+					for {
+						if _, ok := <-conn.errChan; !ok {
+							return
+						}
+					}
 				}
 			}
 		}()
@@ -89,10 +103,10 @@ func (conn *Conn) NotifyClose(c chan wabbit.Error) chan wabbit.Error {
 // AutoRedial mock the reconnection faking a delay of 1 second
 func (conn *Conn) AutoRedial(outChan chan wabbit.Error, done chan bool) {
 	if !conn.hasAutoRedial {
-		conn.defErrDone <- true
 		conn.mu.Lock()
 		conn.hasAutoRedial = true
 		conn.mu.Unlock()
+		conn.defErrDone <- true
 	}
 
 	go func() {
@@ -138,14 +152,22 @@ func (conn *Conn) Close() error {
 	conn.mu.Lock()
 	defer conn.mu.Unlock()
 
-	conn.isConnected = false
-	conn.amqpServer = nil
+	if conn.isConnected {
+		// Disconnect from the server.
+		if err := server.Close(conn.amqpuri, conn.connID); err != nil {
+			return err
+		}
+		conn.isConnected = false
+		conn.amqpServer = nil
+	}
 
 	// enables AutoRedial to gracefully shutdown
 	// This isn't wabbit stuff. It's the streadway/amqp way of notify the shutdown
 	if conn.hasAutoRedial {
 		conn.errSpread.Write(nil)
 	} else {
+		conn.errSpread.Delete(conn.errChan)
+		close(conn.errChan)
 		conn.defErrDone <- true
 	}
 
