@@ -18,6 +18,7 @@ type (
 		consumers  map[string]consumer
 		muConsumer *sync.RWMutex
 
+		_                  uint32
 		deliveryTagCounter uint64
 
 		confirm bool
