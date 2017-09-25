@@ -7,7 +7,6 @@ services:
 go:
   - tip
   - 1.8
-  - 1.7
 install:
   - go get -d -v ./...
   - go build

@@ -1,6 +1,10 @@
 package server
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/NeowayLabs/wabbit"
+)
 
 func TestVHostWithDefaults(t *testing.T) {
 	vh := NewVHost("/")
@@ -113,7 +117,7 @@ func TestQueueBind(t *testing.T) {
 		return
 	}
 
-	err = nwExchange.route("process.data", NewDelivery(&Channel{}, []byte{}, 1))
+	err = nwExchange.route("process.data", NewDelivery(&Channel{}, []byte{}, 1, wabbit.Option{}))
 
 	if err != nil {
 		t.Error(err)
@@ -150,7 +154,7 @@ func TestBasicPublish(t *testing.T) {
 		return
 	}
 
-	err = vh.Publish("neoway", "process.data", NewDelivery(&Channel{}, []byte("teste"), 1), nil)
+	err = vh.Publish("neoway", "process.data", NewDelivery(&Channel{}, []byte("teste"), 1, wabbit.Option{}), nil)
 
 	if err != nil {
 		t.Error(err)
