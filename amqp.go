@@ -54,6 +54,7 @@ type (
 		Reject(requeue bool) error
 
 		Body() []byte
+		Headers() Option
 		DeliveryTag() uint64
 		ConsumerTag() string
 	}

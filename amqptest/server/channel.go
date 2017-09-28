@@ -7,6 +7,7 @@ import (
 	"sync/atomic"
 
 	"github.com/NeowayLabs/wabbit"
+	"github.com/streadway/amqp"
 )
 
 type (
@@ -89,10 +90,12 @@ func (ch *Channel) NotifyPublish(confirm chan wabbit.Confirmation) chan wabbit.C
 	return confirm
 }
 
-func (ch *Channel) Publish(exc, route string, msg []byte, _ wabbit.Option) error {
+func (ch *Channel) Publish(exc, route string, msg []byte, opt wabbit.Option) error {
+	hdrs, _ := opt["headers"].(amqp.Table)
 	d := NewDelivery(ch,
 		msg,
-		atomic.AddUint64(&ch.deliveryTagCounter, 1))
+		atomic.AddUint64(&ch.deliveryTagCounter, 1),
+		wabbit.Option(hdrs))
 
 	err := ch.VHost.Publish(exc, route, d, nil)
 
@@ -152,7 +155,7 @@ func (ch *Channel) Consume(queue, consumerName string, _ wabbit.Option) (<-chan 
 				// since we keep track of unacked messages for
 				// the channel, we need to rebind the delivery
 				// to the consumer channel.
-				d = NewDelivery(ch, d.Body(), d.DeliveryTag())
+				d = NewDelivery(ch, d.Body(), d.DeliveryTag(), d.Headers())
 
 				ch.addUnacked(d, q)
 

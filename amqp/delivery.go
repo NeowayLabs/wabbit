@@ -1,6 +1,9 @@
 package amqp
 
-import "github.com/streadway/amqp"
+import (
+	"github.com/NeowayLabs/wabbit"
+	"github.com/streadway/amqp"
+)
 
 type Delivery struct {
 	*amqp.Delivery
@@ -8,6 +11,10 @@ type Delivery struct {
 
 func (d *Delivery) Body() []byte {
 	return d.Delivery.Body
+}
+
+func (d *Delivery) Headers() wabbit.Option {
+	return wabbit.Option(d.Delivery.Headers)
 }
 
 func (d *Delivery) DeliveryTag() uint64 {
