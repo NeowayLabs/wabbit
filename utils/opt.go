@@ -16,6 +16,7 @@ var (
 		"contentEncoding",
 		"deliveryMode",
 		"priority",
+		"messageId",
 	}
 )
 
@@ -36,6 +37,7 @@ func ConvertOpt(opt wabbit.Option) (amqp.Publishing, error) {
 		contentEncoding = ""
 		deliveryMode    = amqp.Transient
 		priority        = uint8(0)
+		messageId       = ""
 	)
 
 	if wrongOpt, ok := checkOptions(opt); !ok {
@@ -62,6 +64,10 @@ func ConvertOpt(opt wabbit.Option) (amqp.Publishing, error) {
 		if p, ok := opt["priority"].(uint8); ok {
 			priority = p
 		}
+
+		if p, ok := opt["messageId"].(string); ok {
+			messageId = p
+		}
 	}
 
 	return amqp.Publishing{
@@ -70,6 +76,7 @@ func ConvertOpt(opt wabbit.Option) (amqp.Publishing, error) {
 		ContentEncoding: contentEncoding,
 		DeliveryMode:    deliveryMode, // 1=non-persistent, 2=persistent
 		Priority:        priority,     // 0-9
+		MessageId:       messageId,
 		// a bunch of application/implementation-specific fields
 	}, nil
 }

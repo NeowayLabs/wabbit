@@ -24,3 +24,7 @@ func (d *Delivery) DeliveryTag() uint64 {
 func (d *Delivery) ConsumerTag() string {
 	return d.Delivery.ConsumerTag
 }
+
+func (d *Delivery) MessageId() string {
+	return d.Delivery.MessageId
+}

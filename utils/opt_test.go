@@ -31,6 +31,10 @@ func TestConvertOptDefaults(t *testing.T) {
 		t.Errorf("Invalid default priority: %d\n", opt.Priority)
 	}
 
+	if opt.MessageId != "" {
+		t.Errorf("Invalid default message ID: %s\n", opt.MessageId)
+	}
+
 	if len(opt.Headers) != 0 {
 		t.Errorf("Invalid value for headers: %v", opt.Headers)
 	}
@@ -79,6 +83,19 @@ func TestConvertOpt(t *testing.T) {
 
 	if opt.ContentEncoding != "bleh" {
 		t.Errorf("Invalid value for contentEncoding: %s", opt.ContentEncoding)
+	}
+
+	opt, err = ConvertOpt(wabbit.Option{
+		"messageId": "12345",
+	})
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if opt.MessageId != "12345" {
+		t.Errorf("Invalid value for messageId: %s", opt.MessageId)
 	}
 
 	// setting invalid value
