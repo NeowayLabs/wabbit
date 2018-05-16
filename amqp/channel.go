@@ -116,6 +116,14 @@ func (ch *Channel) Consume(queue, consumer string, opt wabbit.Option) (<-chan wa
 }
 
 func (ch *Channel) ExchangeDeclare(name, kind string, opt wabbit.Option) error {
+	return ch.exchangeDeclare(name, kind, false, opt)
+}
+
+func (ch *Channel) ExchangeDeclarePassive(name, kind string, opt wabbit.Option) error {
+	return ch.exchangeDeclare(name, kind, true, opt)
+}
+
+func (ch *Channel) exchangeDeclare(name, kind string, passive bool, opt wabbit.Option) error {
 	var (
 		durable, autoDelete, internal, noWait bool
 		args                                  amqp.Table
@@ -160,7 +168,9 @@ func (ch *Channel) ExchangeDeclare(name, kind string, opt wabbit.Option) error {
 			return errors.New("args is of type amqp.Table")
 		}
 	}
-
+	if passive {
+		return ch.Channel.ExchangeDeclarePassive(name, kind, durable, autoDelete, internal, noWait, args)
+	}
 	return ch.Channel.ExchangeDeclare(name, kind, durable, autoDelete, internal, noWait, args)
 }
 
@@ -196,6 +206,15 @@ func (ch *Channel) QueueBind(name, key, exchange string, opt wabbit.Option) erro
 
 // QueueDeclare declares a new AMQP queue
 func (ch *Channel) QueueDeclare(name string, opt wabbit.Option) (wabbit.Queue, error) {
+	return ch.queueDeclare(name, false, opt)
+}
+
+// QueueDeclarePassive declares an existing AMQP queue
+func (ch *Channel) QueueDeclarePassive(name string, opt wabbit.Option) (wabbit.Queue, error) {
+	return ch.queueDeclare(name, true, opt)
+}
+
+func (ch *Channel) queueDeclare(name string, passive bool, opt wabbit.Option) (wabbit.Queue, error) {
 	var (
 		durable, autoDelete, exclusive, noWait bool
 		args                                   amqp.Table
@@ -241,7 +260,13 @@ func (ch *Channel) QueueDeclare(name string, opt wabbit.Option) (wabbit.Queue, e
 		}
 	}
 
-	q, err := ch.Channel.QueueDeclare(name, durable, autoDelete, exclusive, noWait, args)
+	var q amqp.Queue
+	var err error
+	if passive {
+		q, err = ch.Channel.QueueDeclarePassive(name, durable, autoDelete, exclusive, noWait, args)
+	} else {
+		q, err = ch.Channel.QueueDeclare(name, durable, autoDelete, exclusive, noWait, args)
+	}
 
 	if err != nil {
 		return nil, err
