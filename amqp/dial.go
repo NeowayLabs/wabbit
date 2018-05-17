@@ -46,19 +46,11 @@ func Dial(uri string) (*Conn, error) {
 // NotifyClose registers a listener for close events.
 // For more information see: https://godoc.org/github.com/streadway/amqp#Connection.NotifyClose
 func (conn *Conn) NotifyClose(c chan wabbit.Error) chan wabbit.Error {
-	var (
-		amqpErr2 chan *amqp.Error
-	)
-
-	amqpErr2 = make(chan *amqp.Error)
-
-	amqpErr := conn.Connection.NotifyClose(amqpErr2)
+	amqpErr := conn.Connection.NotifyClose(make(chan *amqp.Error, cap(c)))
 
 	go func() {
-		for {
-			err := <-amqpErr
+		for err := range amqpErr {
 			var ne wabbit.Error
-
 			if err != nil {
 				ne = utils.NewError(
 					err.Code,
@@ -69,9 +61,9 @@ func (conn *Conn) NotifyClose(c chan wabbit.Error) chan wabbit.Error {
 			} else {
 				ne = nil
 			}
-
 			c <- ne
 		}
+		close(c)
 	}()
 
 	return c
