@@ -7,6 +7,7 @@ import (
 	"sync/atomic"
 
 	"github.com/NeowayLabs/wabbit"
+	"github.com/NeowayLabs/wabbit/utils"
 	"github.com/streadway/amqp"
 )
 
@@ -26,6 +27,9 @@ type (
 
 		publishListeners   []chan wabbit.Confirmation
 		muPublishListeners *sync.RWMutex
+
+		errSpread *utils.ErrBroadcast
+		errChan   chan wabbit.Error
 	}
 
 	unackData struct {
@@ -54,7 +58,11 @@ func NewChannel(vhost *VHost) *Channel {
 		muConsumer:         &sync.RWMutex{},
 		consumers:          make(map[string]consumer),
 		muPublishListeners: &sync.RWMutex{},
+		errSpread:          utils.NewErrBroadcast(),
+		errChan:            make(chan wabbit.Error),
 	}
+
+	c.errSpread.Add(c.errChan)
 
 	return &c
 }
@@ -317,5 +325,14 @@ func (ch *Channel) Close() error {
 	}
 	ch.publishListeners = []chan wabbit.Confirmation{}
 
+	ch.errSpread.Delete(ch.errChan)
+	close(ch.errChan)
+
 	return nil
+}
+
+// NotifyClose publishs notifications about errors in the given channel
+func (ch *Channel) NotifyClose(c chan wabbit.Error) chan wabbit.Error {
+	ch.errSpread.Add(c)
+	return c
 }
