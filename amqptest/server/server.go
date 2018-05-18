@@ -45,12 +45,12 @@ func newServer(amqpuri string) *AMQPServer {
 }
 
 // CreateChannel returns a new fresh channel
-func (s *AMQPServer) CreateChannel(connid string) (wabbit.Channel, error) {
-	if _, ok := s.channels[connid]; !ok {
-		s.channels[connid] = make([]*Channel, 0, MaxChannels)
+func (s *AMQPServer) CreateChannel(connID string, conn wabbit.Conn) (wabbit.Channel, error) {
+	if _, ok := s.channels[connID]; !ok {
+		s.channels[connID] = make([]*Channel, 0, MaxChannels)
 	}
 
-	channels := s.channels[connid]
+	channels := s.channels[connID]
 
 	if len(channels) >= MaxChannels {
 		return nil, fmt.Errorf("Channel quota exceeded, Wabbit"+
@@ -60,7 +60,17 @@ func (s *AMQPServer) CreateChannel(connid string) (wabbit.Channel, error) {
 	ch := NewChannel(s.vhost)
 
 	channels = append(channels, ch)
-	s.channels[connid] = channels
+	s.channels[connID] = channels
+
+	tempCh := make(chan wabbit.Error)
+	conn.NotifyClose(tempCh)
+	go func() {
+		for err := range tempCh {
+			ch.errSpread.Write(err)
+		}
+		close(tempCh)
+	}()
+
 	return ch, nil
 }
 
@@ -90,6 +100,13 @@ func (s *AMQPServer) Stop() error {
 	}
 
 	s.notifyChans = make(map[string]*utils.ErrBroadcast)
+
+	for _, chanMap := range s.channels {
+		for _, eachChan := range chanMap {
+			eachChan.Close()
+		}
+	}
+
 	return nil
 }
 

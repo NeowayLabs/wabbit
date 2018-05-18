@@ -29,7 +29,6 @@ type (
 		muPublishListeners *sync.RWMutex
 
 		errSpread *utils.ErrBroadcast
-		errChan   chan wabbit.Error
 	}
 
 	unackData struct {
@@ -59,10 +58,7 @@ func NewChannel(vhost *VHost) *Channel {
 		consumers:          make(map[string]consumer),
 		muPublishListeners: &sync.RWMutex{},
 		errSpread:          utils.NewErrBroadcast(),
-		errChan:            make(chan wabbit.Error),
 	}
-
-	c.errSpread.Add(c.errChan)
 
 	return &c
 }
@@ -325,9 +321,6 @@ func (ch *Channel) Close() error {
 	}
 	ch.publishListeners = []chan wabbit.Confirmation{}
 
-	ch.errSpread.Delete(ch.errChan)
-	close(ch.errChan)
-
 	return nil
 }
 
@@ -335,4 +328,10 @@ func (ch *Channel) Close() error {
 func (ch *Channel) NotifyClose(c chan wabbit.Error) chan wabbit.Error {
 	ch.errSpread.Add(c)
 	return c
+}
+
+// Cancel closes deliveries for all consumers
+func (ch *Channel) Cancel(consumer string, noWait bool) error {
+	ch.Close()
+	return nil
 }
