@@ -32,6 +32,7 @@ type AMQPServer struct {
 	notifyChans map[string]*utils.ErrBroadcast
 	channels    map[string][]*Channel
 	vhost       *VHost
+	muChannels  *sync.RWMutex
 }
 
 // NewServer returns a new fake amqp server
@@ -41,13 +42,14 @@ func newServer(amqpuri string) *AMQPServer {
 		notifyChans: make(map[string]*utils.ErrBroadcast),
 		channels:    make(map[string][]*Channel),
 		vhost:       NewVHost("/"),
+		muChannels:  &sync.RWMutex{},
 	}
 }
 
 // CreateChannel returns a new fresh channel
 func (s *AMQPServer) CreateChannel(connID string, conn wabbit.Conn) (wabbit.Channel, error) {
-	mu.Lock()
-	defer mu.Unlock()
+	s.muChannels.Lock()
+	defer s.muChannels.Unlock()
 
 	if _, ok := s.channels[connID]; !ok {
 		s.channels[connID] = make([]*Channel, 0, MaxChannels)
