@@ -19,7 +19,7 @@ const (
 type Conn struct {
 	amqpuri       string
 	isConnected   bool
-	connID        string
+	ConnID        string
 	errSpread     *utils.ErrBroadcast
 	errChan       chan wabbit.Error
 	defErrDone    chan bool
@@ -45,8 +45,8 @@ func Dial(amqpuri string) (*Conn, error) {
 
 	conn.dialFn = func() error {
 		var err error
-		conn.connID = uuid.New()
-		conn.amqpServer, err = server.Connect(amqpuri, conn.connID, conn.errSpread)
+		conn.ConnID = uuid.New()
+		conn.amqpServer, err = server.Connect(amqpuri, conn.ConnID, conn.errSpread)
 
 		if err != nil {
 			return err
@@ -154,7 +154,7 @@ func (conn *Conn) Close() error {
 
 	if conn.isConnected {
 		// Disconnect from the server.
-		if err := server.Close(conn.amqpuri, conn.connID); err != nil {
+		if err := server.Close(conn.amqpuri, conn.ConnID); err != nil {
 			return err
 		}
 		conn.isConnected = false
@@ -176,5 +176,5 @@ func (conn *Conn) Close() error {
 
 // Channel creates a new fake channel
 func (conn *Conn) Channel() (wabbit.Channel, error) {
-	return conn.amqpServer.CreateChannel(conn.connID)
+	return conn.amqpServer.CreateChannel(conn.ConnID, conn)
 }

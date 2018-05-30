@@ -34,6 +34,7 @@ type (
 		Consume(queue, consumer string, opt Option) (<-chan Delivery, error)
 		Qos(prefetchCount, prefetchSize int, global bool) error
 		Close() error
+		NotifyClose(chan Error) chan Error
 		Publisher
 	}
 

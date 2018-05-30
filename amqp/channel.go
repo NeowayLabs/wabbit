@@ -311,3 +311,29 @@ func (ch *Channel) QueueDelete(name string, opt wabbit.Option) (int, error) {
 func (ch *Channel) Qos(prefetchCount, prefetchSize int, global bool) error {
 	return ch.Channel.Qos(prefetchCount, prefetchSize, global)
 }
+
+// NotifyClose registers a listener for close events.
+// For more information see: https://godoc.org/github.com/streadway/amqp#Channel.NotifyClose
+func (ch *Channel) NotifyClose(c chan wabbit.Error) chan wabbit.Error {
+	amqpErr := ch.Channel.NotifyClose(make(chan *amqp.Error, cap(c)))
+
+	go func() {
+		for err := range amqpErr {
+			var ne wabbit.Error
+			if err != nil {
+				ne = utils.NewError(
+					err.Code,
+					err.Reason,
+					err.Server,
+					err.Recover,
+				)
+			} else {
+				ne = nil
+			}
+			c <- ne
+		}
+		close(c)
+	}()
+
+	return c
+}
