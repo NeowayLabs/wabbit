@@ -49,6 +49,14 @@ func (v *VHost) Qos(prefetchCount, prefetchSize int, global bool) error {
 }
 
 func (v *VHost) ExchangeDeclare(name, kind string, opt wabbit.Option) error {
+	return v.exchangeDeclare(name, kind, false, opt)
+}
+
+func (v *VHost) ExchangeDeclarePassive(name, kind string, opt wabbit.Option) error {
+	return v.exchangeDeclare(name, kind, true, opt)
+}
+
+func (v *VHost) exchangeDeclare(name, kind string, passive bool, opt wabbit.Option) error {
 	if _, ok := v.exchanges[name]; ok {
 		// TODO: We need review this. If the application is trying to re-create an exchange
 		// using other options we shall not return NIL because this indicates success,
@@ -57,6 +65,10 @@ func (v *VHost) ExchangeDeclare(name, kind string, opt wabbit.Option) error {
 		// "declare" concept instead of the "create" concept. If something is already
 		// declared it's no problem...
 		return nil
+	}
+
+	if passive {
+		return fmt.Errorf("Exception (404) Reason: \"NOT_FOUND - no exchange '%s' in vhost '%s'\"", name, v.name)
 	}
 
 	switch kind {
@@ -72,8 +84,20 @@ func (v *VHost) ExchangeDeclare(name, kind string, opt wabbit.Option) error {
 }
 
 func (v *VHost) QueueDeclare(name string, args wabbit.Option) (wabbit.Queue, error) {
+	return v.queueDeclare(name, false, args)
+}
+
+func (v *VHost) QueueDeclarePassive(name string, args wabbit.Option) (wabbit.Queue, error) {
+	return v.queueDeclare(name, true, args)
+}
+
+func (v *VHost) queueDeclare(name string, passive bool, args wabbit.Option) (wabbit.Queue, error) {
 	if q, ok := v.queues[name]; ok {
 		return q, nil
+	}
+
+	if passive {
+		return nil, fmt.Errorf("Exception (404) Reason: \"NOT_FOUND - no queue '%s' in vhost '%s'\"", name, v.name)
 	}
 
 	q := NewQueue(name)
