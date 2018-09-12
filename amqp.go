@@ -61,7 +61,9 @@ type (
 		Headers() Option
 		DeliveryTag() uint64
 		ConsumerTag() string
+		CorrelationId() string
 		MessageId() string
+		ReplyTo() string
 	}
 
 	// Confirmation is an interface to confrimation messages
