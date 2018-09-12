@@ -2,9 +2,10 @@ package main
 
 import (
 	"flag"
+	"log"
+
 	"github.com/NeowayLabs/wabbit"
 	"github.com/NeowayLabs/wabbit/amqp"
-	"log"
 )
 
 var (
@@ -110,8 +111,8 @@ func confirmOne(confirms <-chan wabbit.Confirmation) {
 	log.Printf("[-] Waiting for confirmation of one publishing")
 
 	if confirmed := <-confirms; confirmed.Ack() {
-		log.Printf("[√] Confirmed delivery with delivery tag: %d", confirmed.DeliveryTag)
+		log.Printf("[√] Confirmed delivery with delivery tag: %d", confirmed.DeliveryTag())
 	} else {
-		log.Printf("[x] Failed delivery of delivery tag: %d", confirmed.DeliveryTag)
+		log.Printf("[x] Failed delivery of delivery tag: %d", confirmed.DeliveryTag())
 	}
 }
