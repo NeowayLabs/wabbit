@@ -79,7 +79,7 @@ func publish(uri string, queueName string, exchange string, exchangeType string,
 	}
 }
 
-func connect(uri string) (*amqp.Conn, error) {
+func connect(uri string) (wabbit.Conn, error) {
 	return amqp.Dial(uri)
 }
 

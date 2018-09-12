@@ -18,7 +18,7 @@ type Conn struct {
 }
 
 // Dial to AMQP broker
-func Dial(uri string) (*Conn, error) {
+func Dial(uri string) (wabbit.Conn, error) {
 	conn := &Conn{}
 
 	// closure the uri for handle reconnects
