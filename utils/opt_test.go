@@ -38,6 +38,10 @@ func TestConvertOptDefaults(t *testing.T) {
 	if len(opt.Headers) != 0 {
 		t.Errorf("Invalid value for headers: %v", opt.Headers)
 	}
+
+	if opt.CorrelationId != "" {
+		t.Errorf("Invalid correlation ID: %s\n", opt.CorrelationId)
+	}
 }
 
 func TestConvertOpt(t *testing.T) {
@@ -96,6 +100,19 @@ func TestConvertOpt(t *testing.T) {
 
 	if opt.MessageId != "12345" {
 		t.Errorf("Invalid value for messageId: %s", opt.MessageId)
+	}
+
+	opt, err = ConvertOpt(wabbit.Option{
+		"correlationId": "0123-4414",
+	})
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if opt.CorrelationId != "0123-4414" {
+		t.Errorf("Invalid value for correlationId: %s", opt.CorrelationId)
 	}
 
 	// setting invalid value
