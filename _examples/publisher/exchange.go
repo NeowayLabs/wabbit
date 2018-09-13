@@ -4,8 +4,8 @@ import (
 	"flag"
 	"log"
 
-	"github.com/NeowayLabs/wabbit"
-	"github.com/NeowayLabs/wabbit/amqp"
+	"github.com/PeriscopeData/wabbit"
+	"github.com/PeriscopeData/wabbit/amqp"
 )
 
 var (

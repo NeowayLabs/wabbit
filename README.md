@@ -1,7 +1,7 @@
 # Wabbit - Go AMQP Mocking Library
 
-[![GoDoc](https://godoc.org/github.com/NeowayLabs/wabbit?status.svg)](https://godoc.org/github.com/NeowayLabs/wabbit)
-[![Go Report Card](https://goreportcard.com/badge/github.com/NeowayLabs/wabbit)](https://goreportcard.com/report/github.com/NeowayLabs/wabbit)
+[![GoDoc](https://godoc.org/github.com/PeriscopeData/wabbit?status.svg)](https://godoc.org/github.com/PeriscopeData/wabbit)
+[![Go Report Card](https://goreportcard.com/badge/github.com/PeriscopeData/wabbit)](https://goreportcard.com/report/github.com/PeriscopeData/wabbit)
 
 > Elmer Fudd: Shhh. Be vewy vewy quiet, I'm hunting wabbits
 
@@ -35,9 +35,9 @@ package main
 
 import (
 	"testing"
-	"github.com/NeowayLabs/wabbit/amqptest"
-	"github.com/NeowayLabs/wabbit/amqptest/server"
-	"github.com/NeowayLabs/wabbit/amqp"
+	"github.com/PeriscopeData/wabbit/amqptest"
+	"github.com/PeriscopeData/wabbit/amqptest/server"
+	"github.com/PeriscopeData/wabbit/amqp"
 )
 
 
