@@ -3,7 +3,7 @@ package utils
 import (
 	"sync"
 
-	"github.com/NeowayLabs/wabbit"
+	"github.com/PeriscopeData/wabbit"
 )
 
 const listenerSlots = 128

@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/NeowayLabs/wabbit"
+	"github.com/PeriscopeData/wabbit"
 	"github.com/fsouza/go-dockerclient"
 	"github.com/tiago4orion/conjure"
 )
