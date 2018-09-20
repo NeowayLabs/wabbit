@@ -28,3 +28,7 @@ func (d *Delivery) ConsumerTag() string {
 func (d *Delivery) MessageId() string {
 	return d.Delivery.MessageId
 }
+
+func (d *Delivery) RoutingKey() string {
+	return d.Delivery.RoutingKey
+}
