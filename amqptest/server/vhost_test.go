@@ -175,3 +175,35 @@ func TestBasicPublish(t *testing.T) {
 		return
 	}
 }
+
+func TestQueueNames(t *testing.T) {
+	vh := NewVHost("/")
+
+	queueNames := vh.QueueNames()
+	if len(queueNames) != 0 {
+		t.Errorf("QueueNames was not empty, but should be")
+	}
+
+	_, err := vh.QueueDeclare("test-queue-0", nil)
+	if err != nil {
+		t.Error(err)
+	}
+
+	queueNames = vh.QueueNames()
+	if len(queueNames) != 1 ||
+		queueNames[0] != "test-queue-0" {
+		t.Errorf("QueueNames did not return the right queue names")
+	}
+
+	_, err = vh.QueueDeclare("test-queue-1", nil)
+	if err != nil {
+		t.Error(err)
+	}
+
+	queueNames = vh.QueueNames()
+	if len(queueNames) != 2 ||
+		queueNames[0] != "test-queue-0" ||
+		queueNames[1] != "test-queue-1" {
+		t.Errorf("QueueNames did not return the right queue names")
+	}
+}
