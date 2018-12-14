@@ -177,3 +177,14 @@ func (v *VHost) Publish(exc, route string, d *Delivery, _ wabbit.Option) error {
 
 	return nil
 }
+
+// QueueNames returns a list of declared queues in this AMQP fake virtual host
+func (v *VHost) QueueNames() []string {
+	queueNames := make([]string, len(v.queues))
+	i := 0
+	for key := range v.queues {
+		queueNames[i] = key
+		i++
+	}
+	return queueNames
+}
