@@ -17,7 +17,7 @@ type (
 	}
 )
 
-func NewDelivery(ch *Channel, data []byte, tag uint64, messageId, correlationId string, hdrs wabbit.Option) *Delivery {
+func NewDelivery(ch *Channel, data []byte, tag uint64, messageId, correlationId string, replyTo string, hdrs wabbit.Option) *Delivery {
 	return &Delivery{
 		data:          data,
 		headers:       hdrs,
@@ -25,6 +25,7 @@ func NewDelivery(ch *Channel, data []byte, tag uint64, messageId, correlationId 
 		tag:           tag,
 		messageId:     messageId,
 		correlationId: correlationId,
+		replyTo:       replyTo,
 	}
 }
 

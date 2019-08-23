@@ -42,6 +42,10 @@ func TestConvertOptDefaults(t *testing.T) {
 	if opt.CorrelationId != "" {
 		t.Errorf("Invalid correlation ID: %s\n", opt.CorrelationId)
 	}
+
+	if opt.ReplyTo != "" {
+		t.Errorf("Invalid ReplyTo: %s\n", opt.ReplyTo)
+	}
 }
 
 func TestConvertOpt(t *testing.T) {
@@ -113,6 +117,19 @@ func TestConvertOpt(t *testing.T) {
 
 	if opt.CorrelationId != "0123-4414" {
 		t.Errorf("Invalid value for correlationId: %s", opt.CorrelationId)
+	}
+
+	opt, err = ConvertOpt(wabbit.Option{
+		"replyTo": "rpc-queue",
+	})
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if opt.ReplyTo != "rpc-queue" {
+		t.Errorf("Invalid value for ReplyTo: %s", opt.ReplyTo)
 	}
 
 	// setting invalid value

@@ -14,6 +14,7 @@ var (
 		"headers",
 		"contentType",
 		"contentEncoding",
+		"replyTo",
 		"correlationId",
 		"deliveryMode",
 		"priority",
@@ -39,6 +40,7 @@ func ConvertOpt(opt wabbit.Option) (amqp.Publishing, error) {
 		deliveryMode    = amqp.Transient
 		priority        = uint8(0)
 		messageId       = ""
+		replyTo         = ""
 		correlationId   = ""
 	)
 
@@ -57,6 +59,10 @@ func ConvertOpt(opt wabbit.Option) (amqp.Publishing, error) {
 
 		if c, ok := opt["contentEncoding"].(string); ok {
 			contentEncoding = c
+		}
+
+		if c, ok := opt["replyTo"].(string); ok {
+			replyTo = c
 		}
 
 		if c, ok := opt["correlationId"].(string); ok {
@@ -80,6 +86,7 @@ func ConvertOpt(opt wabbit.Option) (amqp.Publishing, error) {
 		Headers:         headers,
 		ContentType:     contentType,
 		ContentEncoding: contentEncoding,
+		ReplyTo:         replyTo,
 		CorrelationId:   correlationId,
 		DeliveryMode:    deliveryMode, // 1=non-persistent, 2=persistent
 		Priority:        priority,     // 0-9
