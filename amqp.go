@@ -63,6 +63,7 @@ type (
 		CorrelationId() string
 		MessageId() string
 		ReplyTo() string
+		Redelivered() bool
 	}
 
 	// Confirmation is an interface to confrimation messages
