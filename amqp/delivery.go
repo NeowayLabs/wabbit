@@ -36,3 +36,7 @@ func (d *Delivery) MessageId() string {
 func (d *Delivery) ReplyTo() string {
 	return d.Delivery.ReplyTo
 }
+
+func (d *Delivery) Redelivered() bool {
+	return d.Delivery.Redelivered
+}
