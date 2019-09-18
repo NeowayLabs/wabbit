@@ -13,6 +13,7 @@ type (
 		originalRoute string
 		messageId     string
 		replyTo       string
+		redelivered   bool
 		channel       *Channel
 	}
 )
@@ -50,6 +51,10 @@ func (d *Delivery) Headers() wabbit.Option {
 
 func (d *Delivery) DeliveryTag() uint64 {
 	return d.tag
+}
+
+func (d *Delivery) Redelivered() bool {
+	return d.redelivered
 }
 
 func (d *Delivery) ConsumerTag() string {
