@@ -53,7 +53,7 @@ type (
 	// Delivery is an interface to delivered messages
 	Delivery interface {
 		Ack(multiple bool) error
-		Nack(multiple, request bool) error
+		Nack(multiple, requeue bool) error
 		Reject(requeue bool) error
 
 		Body() []byte
