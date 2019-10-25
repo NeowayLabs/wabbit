@@ -1,6 +1,7 @@
 package amqp
 
 import (
+	"crypto/tls"
 	"time"
 
 	"github.com/NeowayLabs/wabbit"
@@ -26,6 +27,31 @@ func Dial(uri string) (*Conn, error) {
 		var err error
 
 		conn.Connection, err = amqp.Dial(uri)
+
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	err := conn.dialFn()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return conn, nil
+}
+
+// DialTLS dials to AMQP broker with a tls config
+func DialTLS(uri string, tlsConfig *tls.Config) (*Conn, error) {
+	conn := &Conn{}
+
+	conn.dialFn = func() error {
+		var err error
+
+		conn.Connection, err = amqp.DialTLS(uri, tlsConfig)
 
 		if err != nil {
 			return err
