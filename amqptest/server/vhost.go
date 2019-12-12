@@ -31,6 +31,7 @@ func (v *VHost) createDefaultExchanges() {
 	exchs := make(map[string]Exchange)
 	exchs["amq.topic"] = NewTopicExchange("amq.topic")
 	exchs["amq.direct"] = NewDirectExchange("amq.direct")
+	exchs["amq.fanout"] = NewFanoutExchange("amq.fanout")
 	exchs["topic"] = NewTopicExchange("topic")
 	exchs["direct"] = NewDirectExchange("direct")
 	exchs[""] = NewDirectExchange("amq.direct")
@@ -84,6 +85,8 @@ func (v *VHost) exchangeDeclare(name, kind string, passive bool, opt wabbit.Opti
 		v.exchanges[name] = NewTopicExchange(name)
 	case "direct":
 		v.exchanges[name] = NewDirectExchange(name)
+	case "fanout":
+		v.exchanges[name] = NewFanoutExchange(name)
 	default:
 		return fmt.Errorf("Invalid exchange type: %s", kind)
 	}
