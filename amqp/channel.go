@@ -174,6 +174,11 @@ func (ch *Channel) exchangeDeclare(name, kind string, passive bool, opt wabbit.O
 	return ch.Channel.ExchangeDeclare(name, kind, durable, autoDelete, internal, noWait, args)
 }
 
+func (ch *Channel) QueueInspect(name string) (wabbit.Queue, error) {
+	q, err := ch.Channel.QueueInspect(name)
+	return &Queue{&q}, err
+}
+
 func (ch *Channel) QueueUnbind(name, route, exchange string, _ wabbit.Option) error {
 	return ch.Channel.QueueUnbind(name, route, exchange, nil)
 }
