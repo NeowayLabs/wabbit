@@ -63,6 +63,14 @@ func NewChannel(vhost *VHost) *Channel {
 	return &c
 }
 
+func (ch *Channel) QueueInspect(name string) (wabbit.Queue, error) {
+	q, ok := ch.queues[name]
+	if ok {
+		return q, nil
+	}
+	return nil, fmt.Errorf("no queue named %s", name)
+}
+
 func (ch *Channel) Confirm(noWait bool) error {
 	ch.confirm = true
 
