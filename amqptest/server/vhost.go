@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/NeowayLabs/wabbit"
 )
@@ -9,6 +10,7 @@ import (
 // VHost is a fake AMQP virtual host
 type VHost struct {
 	name      string
+	mu        sync.Mutex // Protects exchanges and queues.
 	exchanges map[string]Exchange
 	queues    map[string]*Queue
 }
@@ -33,7 +35,9 @@ func (v *VHost) createDefaultExchanges() {
 	exchs["direct"] = NewDirectExchange("direct")
 	exchs[""] = NewDirectExchange("amq.direct")
 
+	v.mu.Lock()
 	v.exchanges = exchs
+	v.mu.Unlock()
 }
 
 func (v *VHost) Cancel(consumer string, noWait bool) error {
@@ -47,10 +51,16 @@ func (v *VHost) Qos(prefetchCount, prefetchSize int, global bool) error {
 }
 
 func (v *VHost) ExchangeDeclare(name, kind string, opt wabbit.Option) error {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+
 	return v.exchangeDeclare(name, kind, false, opt)
 }
 
 func (v *VHost) ExchangeDeclarePassive(name, kind string, opt wabbit.Option) error {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+
 	return v.exchangeDeclare(name, kind, true, opt)
 }
 
@@ -81,14 +91,23 @@ func (v *VHost) exchangeDeclare(name, kind string, passive bool, opt wabbit.Opti
 	return nil
 }
 func (v *VHost) QueueInspect(name string) (wabbit.Queue, error) {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+
 	return v.QueueInspect(name)
 }
 
 func (v *VHost) QueueDeclare(name string, args wabbit.Option) (wabbit.Queue, error) {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+
 	return v.queueDeclare(name, false, args)
 }
 
 func (v *VHost) QueueDeclarePassive(name string, args wabbit.Option) (wabbit.Queue, error) {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+
 	return v.queueDeclare(name, true, args)
 }
 
@@ -105,7 +124,7 @@ func (v *VHost) queueDeclare(name string, passive bool, args wabbit.Option) (wab
 
 	v.queues[name] = q
 
-	err := v.QueueBind(name, name, "", nil)
+	err := v.queueBind(name, name, "", nil)
 
 	if err != nil {
 		return nil, err
@@ -115,11 +134,21 @@ func (v *VHost) queueDeclare(name string, passive bool, args wabbit.Option) (wab
 }
 
 func (v *VHost) QueueDelete(name string, args wabbit.Option) (int, error) {
+	v.mu.Lock()
 	delete(v.queues, name)
+	v.mu.Unlock()
+
 	return 0, nil
 }
 
-func (v *VHost) QueueBind(name, key, exchange string, _ wabbit.Option) error {
+func (v *VHost) QueueBind(name, key, exchange string, options wabbit.Option) error {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+
+	return v.queueBind(name, key, exchange, options)
+}
+
+func (v *VHost) queueBind(name, key, exchange string, _ wabbit.Option) error {
 	var (
 		exch Exchange
 		q    *Queue
@@ -138,7 +167,14 @@ func (v *VHost) QueueBind(name, key, exchange string, _ wabbit.Option) error {
 	return nil
 }
 
-func (v *VHost) QueueUnbind(name, key, exchange string, _ wabbit.Option) error {
+func (v *VHost) QueueUnbind(name, key, exchange string, options wabbit.Option) error {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+
+	return v.queueUnbind(name, key, exchange, options)
+}
+
+func (v *VHost) queueUnbind(name, key, exchange string, _ wabbit.Option) error {
 	var (
 		exch Exchange
 		ok   bool
@@ -159,7 +195,14 @@ func (v *VHost) QueueUnbind(name, key, exchange string, _ wabbit.Option) error {
 // Publish push a new message to queue data channel.
 // The queue data channel is a buffered channel of length `QueueMaxLen`. If
 // the queue is full, this method will block until some messages are consumed.
-func (v *VHost) Publish(exc, route string, d *Delivery, _ wabbit.Option) error {
+func (v *VHost) Publish(exc, route string, d *Delivery, options wabbit.Option) error {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+
+	return v.publish(exc, route, d, options)
+}
+
+func (v *VHost) publish(exc, route string, d *Delivery, _ wabbit.Option) error {
 	var (
 		exch Exchange
 		ok   bool
