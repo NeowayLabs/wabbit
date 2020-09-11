@@ -32,7 +32,6 @@ if [ "${DOCKERPATH}" != "not found" ]; then
     TAGS="-tags integration"
 fi
 
-
 # Standard $GO tooling behavior is to ignore dirs with leading underscors
 for dir in $(find "$TEST_DIRECTORY" -maxdepth 10 -not -path './_examples*' -not -path './.git*' -not -path './Godeps/*' -type d);
 do
