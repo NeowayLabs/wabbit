@@ -18,6 +18,7 @@ var (
 		"priority",
 		"messageId",
 		"correlationId",
+		"expiration",
 	}
 )
 
@@ -40,6 +41,7 @@ func ConvertOpt(opt wabbit.Option) (amqp.Publishing, error) {
 		priority        = uint8(0)
 		messageId       = ""
 		correlationId   = ""
+		expiration      = ""
 	)
 
 	if wrongOpt, ok := checkOptions(opt); !ok {
@@ -74,6 +76,10 @@ func ConvertOpt(opt wabbit.Option) (amqp.Publishing, error) {
 		if p, ok := opt["correlationId"].(string); ok {
 			correlationId = p
 		}
+
+		if p, ok := opt["expiration"].(string); ok {
+			expiration = p
+		}
 	}
 
 	return amqp.Publishing{
@@ -84,6 +90,7 @@ func ConvertOpt(opt wabbit.Option) (amqp.Publishing, error) {
 		Priority:        priority,     // 0-9
 		MessageId:       messageId,
 		CorrelationId:   correlationId,
+		Expiration:      expiration,
 		// a bunch of application/implementation-specific fields
 	}, nil
 }
