@@ -41,7 +41,7 @@ func ConvertOpt(opt wabbit.Option) (amqp.Publishing, error) {
 	)
 
 	if wrongOpt, ok := checkOptions(opt); !ok {
-		return amqp.Publishing{}, fmt.Errorf("Wring option '%s'. Check the docs.", wrongOpt)
+		return amqp.Publishing{}, fmt.Errorf("Wrong option '%s'. Check the docs.", wrongOpt)
 	}
 
 	if opt != nil {
