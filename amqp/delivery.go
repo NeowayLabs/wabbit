@@ -1,6 +1,8 @@
 package amqp
 
 import (
+	"time"
+
 	"github.com/NeowayLabs/wabbit"
 	"github.com/streadway/amqp"
 )
@@ -27,4 +29,7 @@ func (d *Delivery) ConsumerTag() string {
 
 func (d *Delivery) MessageId() string {
 	return d.Delivery.MessageId
+}
+func (d *Delivery) Timestamp() time.Time {
+	return time.Now()
 }
