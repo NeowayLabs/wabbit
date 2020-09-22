@@ -2,6 +2,8 @@
 // implementation of that interface.
 package wabbit
 
+import "time"
+
 type (
 	// Option is a map of AMQP configurations
 	Option map[string]interface{}
@@ -62,6 +64,7 @@ type (
 		DeliveryTag() uint64
 		ConsumerTag() string
 		MessageId() string
+		Timestamp() time.Time
 	}
 
 	// Confirmation is an interface to confrimation messages

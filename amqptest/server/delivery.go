@@ -1,6 +1,10 @@
 package server
 
-import "github.com/NeowayLabs/wabbit"
+import (
+	"time"
+
+	"github.com/NeowayLabs/wabbit"
+)
 
 type (
 	// Delivery is an interface to delivered messages
@@ -55,4 +59,8 @@ func (d *Delivery) ConsumerTag() string {
 
 func (d *Delivery) MessageId() string {
 	return d.messageId
+}
+
+func (d *Delivery) Timestamp() time.Time {
+	return time.Now()
 }
