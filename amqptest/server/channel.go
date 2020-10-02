@@ -266,6 +266,8 @@ func (ch *Channel) Nack(tag uint64, multiple bool, requeue bool) error {
 	)
 
 	if !multiple {
+		ch.muUnacked.Lock()
+		defer ch.muUnacked.Unlock()
 		found := false
 		for pos, ud = range ch.unacked {
 			if ud.d.DeliveryTag() == tag {
@@ -282,9 +284,7 @@ func (ch *Channel) Nack(tag uint64, multiple bool, requeue bool) error {
 			ud.q.data <- ud.d
 		}
 
-		ch.muUnacked.Lock()
 		ch.unacked = ch.unacked[:pos+copy(ch.unacked[pos:], ch.unacked[pos+1:])]
-		ch.muUnacked.Unlock()
 	} else {
 		nackMessages := make([]uint64, 0, QueueMaxLen)
 
