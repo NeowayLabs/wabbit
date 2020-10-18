@@ -90,12 +90,6 @@ func (v *VHost) exchangeDeclare(name, kind string, passive bool, opt wabbit.Opti
 
 	return nil
 }
-func (v *VHost) QueueInspect(name string) (wabbit.Queue, error) {
-	v.mu.Lock()
-	defer v.mu.Unlock()
-
-	return v.QueueInspect(name)
-}
 
 func (v *VHost) QueueDeclare(name string, args wabbit.Option) (wabbit.Queue, error) {
 	v.mu.Lock()
