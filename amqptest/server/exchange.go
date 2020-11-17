@@ -92,3 +92,33 @@ func (d *DirectExchange) route(route string, delivery *Delivery) error {
 	return fmt.Errorf("No bindings to route: %s", route)
 
 }
+
+// FanoutExchange routes messages to all of the queues that are
+// bound to it and the routing key is ignored.
+type FanoutExchange struct {
+	name     string
+	bindings map[string]*Queue
+}
+
+func NewFanoutExchange(name string) *FanoutExchange {
+	return &FanoutExchange{
+		name:     name,
+		bindings: make(map[string]*Queue),
+	}
+}
+
+func (t *FanoutExchange) addBinding(route string, q *Queue) {
+	t.bindings[q.name] = q
+}
+
+func (t *FanoutExchange) delBinding(route string) {
+	delete(t.bindings, route)
+}
+
+func (t *FanoutExchange) route(route string, d *Delivery) error {
+	for _, q := range t.bindings {
+		q.data <- d
+	}
+
+	return nil
+}
