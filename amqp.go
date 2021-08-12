@@ -64,6 +64,7 @@ type (
 		DeliveryTag() uint64
 		ConsumerTag() string
 		MessageId() string
+		ContentType() string
 		Timestamp() time.Time
 	}
 
