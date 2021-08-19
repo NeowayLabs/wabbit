@@ -16,18 +16,18 @@ type (
 		originalRoute string
 		messageId     string
 		channel       *Channel
-		contentType 	string
+		contentType   string
 	}
 )
 
 func NewDelivery(ch *Channel, data []byte, tag uint64, messageId string, hdrs wabbit.Option, contentType string) *Delivery {
 	return &Delivery{
-		data:         data,
-		headers:      hdrs,
-		channel:      ch,
-		tag:          tag,
-		messageId:    messageId,
-		contentType:  contentType
+		data:        data,
+		headers:     hdrs,
+		channel:     ch,
+		tag:         tag,
+		messageId:   messageId,
+		contentType: contentType,
 	}
 }
 
