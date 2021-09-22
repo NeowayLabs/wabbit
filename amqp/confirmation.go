@@ -1,6 +1,6 @@
 package amqp
 
-import "github.com/streadway/amqp"
+import amqp "github.com/rabbitmq/amqp091-go"
 
 type Confirmation struct {
 	amqp.Confirmation
