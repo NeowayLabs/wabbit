@@ -102,7 +102,7 @@ func headersMatch(b BindingsMap, d *Delivery) (bool, error) {
 				if b.headers[key] == val.(string) {
 					return true, nil
 				}
-			case "all": // case "all"
+			default: // case "all" to keep golint happy
 				if b.headers[key] != val.(string) {
 					return false, nil
 				}
