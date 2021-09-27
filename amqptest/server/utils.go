@@ -82,8 +82,8 @@ func headersMatch(b *BindingsMap, d *Delivery) (bool, error) {
 	var cmpType string
 	var init bool
 
-	if cmpType, ok := b.headers["x-match"]; ok {
-		cmpType = strings.ToLower(cmpType)
+	if val, ok := b.headers["x-match"]; ok {
+		cmpType = strings.ToLower(val)
 		if cmpType != "any" && cmpType != "all" {
 			return false, fmt.Errorf("x-match binding should be set to \"any\" or \"all\" values. got: %s", cmpType)
 		}
@@ -96,15 +96,15 @@ func headersMatch(b *BindingsMap, d *Delivery) (bool, error) {
 	// To simplify the return if all the iteration completes
 	init = cmpType == "all"
 
-	for key, val := range d.Headers() {
+	for key, val := range b.headers {
 		if !strings.HasPrefix(key, "x-") {
 			switch cmpType {
 			case "any":
-				if b.headers[key] == val.(string) {
+				if d.headers[key] == val {
 					return true, nil
 				}
-			default: // case "all" to keep golint happy
-				if b.headers[key] != val.(string) {
+			case "all":
+				if d.headers[key] != val {
 					return false, nil
 				}
 			}
