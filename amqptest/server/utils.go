@@ -88,7 +88,7 @@ func headersMatch(b *BindingsMap, d *Delivery) (bool, error) {
 			return false, fmt.Errorf("x-match binding should be set to \"any\" or \"all\" values. got: %s", cmpType)
 		}
 	} else {
-		// when there is no x-match header message are sent to all the bindings
+		// when there is no x-match header messages are fanout to all the bindings
 		return true, nil
 	}
 

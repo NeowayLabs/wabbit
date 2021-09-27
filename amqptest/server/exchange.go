@@ -115,7 +115,12 @@ func NewHeadersExchange(name string) *HeadersExchange {
 func (t *HeadersExchange) addBinding(route string, b *BindingsMap) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
-	t.bindings[b.queue.name] = b
+	bindingKey := route
+	if bindingKey == "" {
+		bindingKey = b.queue.name
+	}
+
+	t.bindings[bindingKey] = b
 }
 
 func (t *HeadersExchange) delBinding(route string) {
