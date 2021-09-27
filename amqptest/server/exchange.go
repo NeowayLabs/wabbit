@@ -128,7 +128,7 @@ func (t *HeadersExchange) route(route string, d *Delivery) error {
 	t.mu.RLock()
 	defer t.mu.RUnlock()
 	for _, bindings := range t.bindings {
-		if match, err := headersMatch(*bindings, d); match {
+		if match, err := headersMatch(bindings, d); match {
 			bindings.queue.data <- d
 		} else if err != nil {
 			return err

@@ -78,17 +78,18 @@ outer:
 }
 
 // match the message headers with the bindings depending on the x-match value and ignorint headers starting with x-
-func headersMatch(b BindingsMap, d *Delivery) (bool, error) {
+func headersMatch(b *BindingsMap, d *Delivery) (bool, error) {
 	var cmpType string
 	var init bool
 
-	if cmpType, ok := d.Headers()["x-match"].(string); ok {
+	if cmpType, ok := b.headers["x-match"]; ok {
 		cmpType = strings.ToLower(cmpType)
 		if cmpType != "any" && cmpType != "all" {
 			return false, fmt.Errorf("x-match binding should be set to \"any\" or \"all\" values. got: %s", cmpType)
 		}
 	} else {
-		return false, fmt.Errorf("x-match binding is not set")
+		// when there is no x-match header message are sent to all the bindings
+		return true, nil
 	}
 
 	// If it is all the base boolean flag iteration value is true, if it is any is false
