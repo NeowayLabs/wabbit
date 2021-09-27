@@ -9,7 +9,7 @@ AMQP is a verbose protocol that makes it difficult to implement proper
 unit-testing on your application.  The first goal of this package is
 provide a sane interface for an AMQP client implementation based on
 the specification AMQP-0-9-1 (no extension) and then an implementation
-of this interface using the well established package [streadway/amqp](https://github.com/streadway/amqp) (a
+of this interface using the well established package [streadway/amqp](https://github.com/rabbitmq/amqp091-go) (a
 wrapper).
 
 What are the advantages of this?
@@ -22,7 +22,7 @@ What are the advantages of this?
 
 This package have an AMQP interface and two possible implementations:
 
--   wabbit/amqp - Bypass to [streadway/amqp](https://github.com/streadway/amqp)
+-   wabbit/amqp - Bypass to [rabbitmq/amqp091-go](https://github.com/rabbitmq/amqp091-go)
 -   wabbit/amqptest
 
 In the same way you can use the http package in your software and use

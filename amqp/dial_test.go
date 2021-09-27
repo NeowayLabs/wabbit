@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package amqp
@@ -12,7 +13,7 @@ import (
 
 	"github.com/NeowayLabs/wabbit"
 	docker "github.com/fsouza/go-dockerclient"
-	"github.com/streadway/amqp"
+	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/tiago4orion/conjure"
 )
 

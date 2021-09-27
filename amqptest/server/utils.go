@@ -1,6 +1,9 @@
 package server
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 // matchs r2 against r1 following the AMQP rules for topic routing keys
 func topicMatch(r1, r2 string) bool {
@@ -72,4 +75,41 @@ outer:
 	}
 
 	return match
+}
+
+// match the message headers with the bindings depending on the x-match value and ignorint headers starting with x-
+func headersMatch(b *BindingsMap, d *Delivery) (bool, error) {
+	var cmpType string
+	var init bool
+
+	if val, ok := b.headers["x-match"]; ok {
+		cmpType = strings.ToLower(val)
+		if cmpType != "any" && cmpType != "all" {
+			return false, fmt.Errorf("x-match binding should be set to \"any\" or \"all\" values. got: %s", cmpType)
+		}
+	} else {
+		// when there is no x-match header messages are fanout to all the bindings
+		return true, nil
+	}
+
+	// If it is all the base boolean flag iteration value is true, if it is any is false
+	// To simplify the return if all the iteration completes
+	init = cmpType == "all"
+
+	for key, val := range b.headers {
+		if !strings.HasPrefix(key, "x-") {
+			switch cmpType {
+			case "any":
+				if d.headers[key] == val {
+					return true, nil
+				}
+			case "all":
+				if d.headers[key] != val {
+					return false, nil
+				}
+			}
+		}
+	}
+
+	return init, nil
 }
