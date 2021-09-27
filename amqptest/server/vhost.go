@@ -86,7 +86,7 @@ func (v *VHost) exchangeDeclare(name, kind string, passive bool, opt wabbit.Opti
 		v.exchanges[name] = NewDirectExchange(name)
 	case "headers":
 		// TODO: This is obviously wrong, but for now I just need the creation to work.
-		v.exchanges[name] = NewDirectExchange(name)
+		v.exchanges[name] = NewHeadersExchange(name)
 	default:
 		return fmt.Errorf("invalid exchange type: %s", kind)
 	}
