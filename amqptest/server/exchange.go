@@ -7,7 +7,7 @@ import (
 
 type Exchange interface {
 	route(route string, d *Delivery) error
-	addBinding(route string, q *Queue)
+	addBinding(route string, b *BindingsMap)
 	delBinding(route string)
 }
 
@@ -30,10 +30,10 @@ func NewTopicExchange(name string) *TopicExchange {
 	}
 }
 
-func (t *TopicExchange) addBinding(route string, q *Queue) {
+func (t *TopicExchange) addBinding(route string, b *BindingsMap) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
-	t.bindings[route] = BindingsMap{q, nil}
+	t.bindings[route] = BindingsMap{b.queue, nil}
 }
 
 func (t *TopicExchange) delBinding(route string) {
@@ -70,14 +70,14 @@ func NewDirectExchange(name string) *DirectExchange {
 	}
 }
 
-func (d *DirectExchange) addBinding(route string, q *Queue) {
+func (d *DirectExchange) addBinding(route string, b *BindingsMap) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	if d.bindings == nil {
 		d.bindings = make(map[string]BindingsMap)
 	}
 
-	d.bindings[route] = BindingsMap{q, nil}
+	d.bindings[route] = BindingsMap{b.queue, nil}
 }
 
 func (d *DirectExchange) delBinding(route string) {
@@ -112,10 +112,10 @@ func NewHeadersExchange(name string) *HeadersExchange {
 	}
 }
 
-func (t *HeadersExchange) addBinding(route string, q *Queue) {
+func (t *HeadersExchange) addBinding(route string, b *BindingsMap) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
-	t.bindings[route] = BindingsMap{q, nil}
+	t.bindings[b.queue.name] = BindingsMap{b.queue, nil}
 }
 
 func (t *HeadersExchange) delBinding(route string) {
@@ -128,9 +128,10 @@ func (t *HeadersExchange) route(route string, d *Delivery) error {
 	t.mu.RLock()
 	defer t.mu.RUnlock()
 	for _, bindings := range t.bindings {
-		if headersMatch(bindings) {
+		if match, err := headersMatch(bindings, d); match {
 			bindings.queue.data <- d
-			return nil
+		} else if err != nil {
+			return err
 		}
 	}
 
