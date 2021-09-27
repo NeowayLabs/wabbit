@@ -63,7 +63,7 @@ func TestHeadersMatch(t *testing.T) {
 		{"any headers in exchange and message", BindingsMap{queue: q, headers: map[string]string{"x-match": "any", "test": "test", "test2": "test"}}, Delivery{headers: wabbit.Option{"test": "test"}}, true, true},
 
 		// FAIL
-		{"wrong x-match header value in bingings", BindingsMap{queue: q, headers: map[string]string{"x-match": "test"}}, Delivery{headers: wabbit.Option{}}, false, false},
+		{"wrong x-match header value in bindings", BindingsMap{queue: q, headers: map[string]string{"x-match": "test"}}, Delivery{headers: wabbit.Option{}}, false, false},
 		{"just x-match header set to any in exchange no headers message message", BindingsMap{queue: q, headers: map[string]string{"x-match": "any"}}, Delivery{headers: wabbit.Option{}}, false, true},
 		{"all headers in exchange no headers in message", BindingsMap{queue: q, headers: map[string]string{"x-match": "all", "test": "test"}}, Delivery{headers: wabbit.Option{}}, false, true},
 		{"all headers in exchange some headers in message", BindingsMap{queue: q, headers: map[string]string{"x-match": "all", "test": "test", "test2": "test"}}, Delivery{headers: wabbit.Option{"test": "test"}}, false, true},
