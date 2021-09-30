@@ -71,6 +71,31 @@ func DialConfig(uri string, config amqp.Config) (*Conn, error) {
 	})
 }
 
+// DialTLS dials to AMQP broker with a tls config
+func DialTLS(uri string, tlsConfig *tls.Config) (*Conn, error) {
+	conn := &Conn{}
+
+	conn.dialFn = func() error {
+		var err error
+
+		conn.Connection, err = amqp.DialTLS(uri, tlsConfig)
+
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	err := conn.dialFn()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return conn, nil
+}
+
 // NotifyClose registers a listener for close events.
 // For more information see: https://godoc.org/github.com/rabbitmq/amqp091-go#Connection.NotifyClose
 func (conn *Conn) NotifyClose(c chan wabbit.Error) chan wabbit.Error {
