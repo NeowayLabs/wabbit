@@ -66,6 +66,7 @@ type (
 		MessageId() string
 		ContentType() string
 		Timestamp() time.Time
+		RoutingKey() string
 	}
 
 	// Confirmation is an interface to confrimation messages
