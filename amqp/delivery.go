@@ -38,3 +38,7 @@ func (d *Delivery) Timestamp() time.Time {
 func (d *Delivery) ContentType() string {
 	return d.Delivery.ContentType
 }
+
+func (d *Delivery) RoutingKey() string {
+	return d.Delivery.RoutingKey
+}
