@@ -1,8 +1,8 @@
 package amqp
 
-import "github.com/streadway/amqp"
+import amqp "github.com/rabbitmq/amqp091-go"
 
-// Queue is a wrapper for "streadway/amqp".Queue but implementing
+// Queue is a wrapper for "rabbitmq/amqp091-go".Queue but implementing
 // the wabbit.Queue interface.
 type Queue struct {
 	*amqp.Queue

@@ -1,8 +1,10 @@
 package amqp
 
 import (
+	"time"
+
 	"github.com/NeowayLabs/wabbit"
-	"github.com/streadway/amqp"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 type Delivery struct {
@@ -27,4 +29,12 @@ func (d *Delivery) ConsumerTag() string {
 
 func (d *Delivery) MessageId() string {
 	return d.Delivery.MessageId
+}
+
+func (d *Delivery) Timestamp() time.Time {
+	return time.Now()
+}
+
+func (d *Delivery) ContentType() string {
+	return d.Delivery.ContentType
 }

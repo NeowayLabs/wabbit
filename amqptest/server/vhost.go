@@ -76,7 +76,7 @@ func (v *VHost) exchangeDeclare(name, kind string, passive bool, opt wabbit.Opti
 	}
 
 	if passive {
-		return fmt.Errorf("Exception (404) Reason: \"NOT_FOUND - no exchange '%s' in vhost '%s'\"", name, v.name)
+		return fmt.Errorf("exception (404) Reason: \"NOT_FOUND - no exchange '%s' in vhost '%s'\"", name, v.name)
 	}
 
 	switch kind {
@@ -84,17 +84,13 @@ func (v *VHost) exchangeDeclare(name, kind string, passive bool, opt wabbit.Opti
 		v.exchanges[name] = NewTopicExchange(name)
 	case "direct":
 		v.exchanges[name] = NewDirectExchange(name)
+	case "headers":
+		v.exchanges[name] = NewHeadersExchange(name)
 	default:
-		return fmt.Errorf("Invalid exchange type: %s", kind)
+		return fmt.Errorf("invalid exchange type: %s", kind)
 	}
 
 	return nil
-}
-func (v *VHost) QueueInspect(name string) (wabbit.Queue, error) {
-	v.mu.Lock()
-	defer v.mu.Unlock()
-
-	return v.QueueInspect(name)
 }
 
 func (v *VHost) QueueDeclare(name string, args wabbit.Option) (wabbit.Queue, error) {
@@ -117,7 +113,7 @@ func (v *VHost) queueDeclare(name string, passive bool, args wabbit.Option) (wab
 	}
 
 	if passive {
-		return nil, fmt.Errorf("Exception (404) Reason: \"NOT_FOUND - no queue '%s' in vhost '%s'\"", name, v.name)
+		return nil, fmt.Errorf("exception (404) Reason: \"NOT_FOUND - no queue '%s' in vhost '%s'\"", name, v.name)
 	}
 
 	q := NewQueue(name)
@@ -156,14 +152,14 @@ func (v *VHost) queueBind(name, key, exchange string, _ wabbit.Option) error {
 	)
 
 	if exch, ok = v.exchanges[exchange]; !ok {
-		return fmt.Errorf("Unknown exchange '%s'", exchange)
+		return fmt.Errorf("unknown exchange '%s'", exchange)
 	}
 
 	if q, ok = v.queues[name]; !ok {
-		return fmt.Errorf("Unknown queue '%s'", name)
+		return fmt.Errorf("unknown queue '%s'", name)
 	}
 
-	exch.addBinding(key, q)
+	exch.addBinding(key, &BindingsMap{q, nil})
 	return nil
 }
 
@@ -181,11 +177,11 @@ func (v *VHost) queueUnbind(name, key, exchange string, _ wabbit.Option) error {
 	)
 
 	if exch, ok = v.exchanges[exchange]; !ok {
-		return fmt.Errorf("Unknown exchange '%s'", exchange)
+		return fmt.Errorf("unknown exchange '%s'", exchange)
 	}
 
 	if _, ok = v.queues[name]; !ok {
-		return fmt.Errorf("Unknown queue '%s'", name)
+		return fmt.Errorf("unknown queue '%s'", name)
 	}
 
 	exch.delBinding(key)
@@ -210,7 +206,7 @@ func (v *VHost) publish(exc, route string, d *Delivery, _ wabbit.Option) error {
 	)
 
 	if exch, ok = v.exchanges[exc]; !ok {
-		return fmt.Errorf("Unknow exchange '%s'", exc)
+		return fmt.Errorf("unknow exchange '%s'", exc)
 	}
 
 	err = exch.route(route, d)

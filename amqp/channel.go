@@ -5,7 +5,7 @@ import (
 
 	"github.com/NeowayLabs/wabbit"
 	"github.com/NeowayLabs/wabbit/utils"
-	"github.com/streadway/amqp"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 // Channel is a wrapper channel structure for amqp.Channel
@@ -318,7 +318,7 @@ func (ch *Channel) Qos(prefetchCount, prefetchSize int, global bool) error {
 }
 
 // NotifyClose registers a listener for close events.
-// For more information see: https://godoc.org/github.com/streadway/amqp#Channel.NotifyClose
+// For more information see: https://godoc.org/github.com/rabbitmq/amqp091-go#Channel.NotifyClose
 func (ch *Channel) NotifyClose(c chan wabbit.Error) chan wabbit.Error {
 	amqpErr := ch.Channel.NotifyClose(make(chan *amqp.Error, cap(c)))
 

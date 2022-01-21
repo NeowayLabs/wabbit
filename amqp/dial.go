@@ -6,7 +6,7 @@ import (
 
 	"github.com/NeowayLabs/wabbit"
 	"github.com/NeowayLabs/wabbit/utils"
-	"github.com/streadway/amqp"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 // Conn is the amqp connection
@@ -72,7 +72,7 @@ func DialConfig(uri string, config amqp.Config) (*Conn, error) {
 }
 
 // NotifyClose registers a listener for close events.
-// For more information see: https://godoc.org/github.com/streadway/amqp#Connection.NotifyClose
+// For more information see: https://godoc.org/github.com/rabbitmq/amqp091-go#Connection.NotifyClose
 func (conn *Conn) NotifyClose(c chan wabbit.Error) chan wabbit.Error {
 	amqpErr := conn.Connection.NotifyClose(make(chan *amqp.Error, cap(c)))
 

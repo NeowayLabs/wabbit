@@ -8,7 +8,7 @@ import (
 
 	"github.com/NeowayLabs/wabbit"
 	"github.com/NeowayLabs/wabbit/utils"
-	"github.com/streadway/amqp"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 type (
@@ -105,11 +105,15 @@ func (ch *Channel) NotifyPublish(confirm chan wabbit.Confirmation) chan wabbit.C
 func (ch *Channel) Publish(exc, route string, msg []byte, opt wabbit.Option) error {
 	hdrs, _ := opt["headers"].(amqp.Table)
 	messageId, _ := opt["messageId"].(string)
+	contentType, _ := opt["contentType"].(string)
+
 	d := NewDelivery(ch,
 		msg,
 		atomic.AddUint64(&ch.deliveryTagCounter, 1),
 		messageId,
-		wabbit.Option(hdrs))
+		wabbit.Option(hdrs),
+		contentType,
+	)
 
 	err := ch.VHost.Publish(exc, route, d, nil)
 
@@ -169,7 +173,7 @@ func (ch *Channel) Consume(queue, consumerName string, _ wabbit.Option) (<-chan 
 				// since we keep track of unacked messages for
 				// the channel, we need to rebind the delivery
 				// to the consumer channel.
-				d = NewDelivery(ch, d.Body(), d.DeliveryTag(), d.MessageId(), d.Headers())
+				d = NewDelivery(ch, d.Body(), d.DeliveryTag(), d.MessageId(), d.Headers(), d.ContentType())
 
 				ch.addUnacked(d, q)
 
@@ -266,6 +270,8 @@ func (ch *Channel) Nack(tag uint64, multiple bool, requeue bool) error {
 	)
 
 	if !multiple {
+		ch.muUnacked.Lock()
+		defer ch.muUnacked.Unlock()
 		found := false
 		for pos, ud = range ch.unacked {
 			if ud.d.DeliveryTag() == tag {
@@ -282,9 +288,7 @@ func (ch *Channel) Nack(tag uint64, multiple bool, requeue bool) error {
 			ud.q.data <- ud.d
 		}
 
-		ch.muUnacked.Lock()
 		ch.unacked = ch.unacked[:pos+copy(ch.unacked[pos:], ch.unacked[pos+1:])]
-		ch.muUnacked.Unlock()
 	} else {
 		nackMessages := make([]uint64, 0, QueueMaxLen)
 
