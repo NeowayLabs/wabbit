@@ -59,7 +59,7 @@ func (s *AMQPServer) CreateChannel(connID string, conn wabbit.Conn) (wabbit.Chan
 
 	if len(channels) >= MaxChannels {
 		return nil, fmt.Errorf("Channel quota exceeded, Wabbit"+
-			" supports only %d fake channels for tests.", MaxChannels)
+			" supports only %d fake channels for tests", MaxChannels)
 	}
 
 	ch := NewChannel(s.vhost)
@@ -149,8 +149,8 @@ func getServer(amqpuri string) (*AMQPServer, error) {
 
 	amqpServer := servers[amqpuri]
 
-	if amqpServer == nil || amqpServer.running == false {
-		return nil, errors.New("Network unreachable")
+	if amqpServer == nil || !amqpServer.running {
+		return nil, errors.New("network unreachable")
 	}
 
 	return amqpServer, nil
@@ -171,7 +171,7 @@ func Close(amqpuri string, connID string) error {
 	amqpServer, err := getServer(amqpuri)
 
 	if err != nil {
-		return errors.New("Failed to close connection")
+		return errors.New("failed to close connection")
 	}
 
 	amqpServer.delNotify(connID)

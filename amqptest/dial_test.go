@@ -39,8 +39,7 @@ func TestDial(t *testing.T) {
 	amqpuri := "amqp://guest:guest@localhost:35672/%2f"
 
 	// Should fail
-	conn, err := Dial(amqpuri)
-
+	_, err := Dial(amqpuri)
 	if err == nil {
 		t.Error("No backend started... Should fail")
 		return
@@ -56,11 +55,20 @@ func TestDial(t *testing.T) {
 		return
 	}
 
-	conn, err = Dial(amqpuri)
+	conn, err := Dial(amqpuri)
 
 	if err != nil || conn == nil {
 		t.Error(err)
 		return
+	}
+
+	if conn.IsClosed() {
+		t.Error("Open Connection should not say its closed")
+	}
+
+	conn.Close()
+	if !conn.IsClosed() {
+		t.Error("Closed Connection should not say its open")
 	}
 
 	server.Stop()

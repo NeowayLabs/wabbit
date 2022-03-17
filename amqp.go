@@ -14,6 +14,7 @@ type (
 		AutoRedial(errChan chan Error, done chan bool)
 		Close() error
 		NotifyClose(chan Error) chan Error
+		IsClosed() bool
 	}
 
 	// Channel is an AMQP channel interface
@@ -37,6 +38,7 @@ type (
 		Consume(queue, consumer string, opt Option) (<-chan Delivery, error)
 		Qos(prefetchCount, prefetchSize int, global bool) error
 		Close() error
+		IsClosed() bool
 		NotifyClose(chan Error) chan Error
 		Publisher
 	}

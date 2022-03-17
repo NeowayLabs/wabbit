@@ -55,6 +55,18 @@ func TestBasicConsumer(t *testing.T) {
 		t.Errorf("Failed to publish message to specified route")
 		return
 	}
+
+	if ch.IsClosed() {
+		t.Error("Expected a valid Channel to return false before closing")
+		return
+	}
+
+	// Closing a channel should make IsClosed return true
+	ch.Close()
+	if !ch.IsClosed() {
+		t.Error("Expected Channel to return true after closing")
+		return
+	}
 }
 
 func TestWorkerQueue(t *testing.T) {

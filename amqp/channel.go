@@ -342,3 +342,7 @@ func (ch *Channel) NotifyClose(c chan wabbit.Error) chan wabbit.Error {
 
 	return c
 }
+
+func (ch *Channel) IsClosed() bool {
+	return ch.Channel.IsClosed()
+}

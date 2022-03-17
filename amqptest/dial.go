@@ -32,7 +32,7 @@ type Conn struct {
 
 // Dial mock the connection dialing to rabbitmq and
 // returns the established connection or error if something goes wrong
-func Dial(amqpuri string) (*Conn, error) {
+func Dial(amqpuri string) (wabbit.Conn, error) {
 	conn := &Conn{
 		amqpuri:    amqpuri,
 		errSpread:  utils.NewErrBroadcast(),
@@ -177,4 +177,9 @@ func (conn *Conn) Close() error {
 // Channel creates a new fake channel
 func (conn *Conn) Channel() (wabbit.Channel, error) {
 	return conn.amqpServer.CreateChannel(conn.ConnID, conn)
+}
+
+// Channel creates a new fake channel
+func (conn *Conn) IsClosed() bool {
+	return !conn.isConnected
 }

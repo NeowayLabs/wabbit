@@ -159,3 +159,7 @@ func (conn *Conn) Channel() (wabbit.Channel, error) {
 
 	return &Channel{ch}, nil
 }
+
+func (conn *Conn) IsClosed() bool {
+	return conn.Connection.IsClosed()
+}
