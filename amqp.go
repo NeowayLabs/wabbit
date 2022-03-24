@@ -2,7 +2,11 @@
 // implementation of that interface.
 package wabbit
 
-import "time"
+import (
+	"time"
+
+	amqp "github.com/rabbitmq/amqp091-go"
+)
 
 type (
 	// Option is a map of AMQP configurations
@@ -39,6 +43,7 @@ type (
 		Qos(prefetchCount, prefetchSize int, global bool) error
 		Close() error
 		IsClosed() bool
+		PublishWithDeferredConfirm(exchange, key string, mandatory, immediate bool, msg amqp.Publishing) (*amqp.DeferredConfirmation, error)
 		NotifyClose(chan Error) chan Error
 		Publisher
 	}
@@ -52,7 +57,7 @@ type (
 
 	// Publisher is an interface to something able to publish messages
 	Publisher interface {
-		Publish(exc, route string, msg []byte, opt Option) error
+		Publish(exchange, key string, mandatory, immediate bool, msg amqp.Publishing) error
 	}
 
 	// Delivery is an interface to delivered messages

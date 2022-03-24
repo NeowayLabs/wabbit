@@ -103,23 +103,31 @@ func (ch *Channel) NotifyPublish(confirm chan wabbit.Confirmation) chan wabbit.C
 	return confirm
 }
 
-func (ch *Channel) Publish(exc, route string, msg []byte, opt wabbit.Option) error {
-	hdrs, _ := opt["headers"].(amqp.Table)
-	messageId, _ := opt["messageId"].(string)
-	contentType, _ := opt["contentType"].(string)
+func (ch *Channel) Publish(
+	exchange, key string,
+	mandatory, immediate bool,
+	msg amqp.Publishing) error {
+	_, err := ch.PublishWithDeferredConfirm(exchange, key, mandatory, immediate, msg)
+	return err
+}
+
+func (ch *Channel) PublishWithDeferredConfirm(
+	exchange, key string,
+	mandatory, immediate bool,
+	msg amqp.Publishing) (*amqp.DeferredConfirmation, error) {
 
 	d := NewDelivery(ch,
-		msg,
+		msg.Body,
 		atomic.AddUint64(&ch.deliveryTagCounter, 1),
-		messageId,
-		wabbit.Option(hdrs),
-		contentType,
+		msg.MessageId,
+		wabbit.Option(msg.Headers),
+		msg.ContentType,
 	)
 
-	err := ch.VHost.Publish(exc, route, d, nil)
+	err := ch.VHost.Publish(exchange, key, d, nil)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if ch.confirm {
@@ -127,9 +135,11 @@ func (ch *Channel) Publish(exc, route string, msg []byte, opt wabbit.Option) err
 		for _, l := range ch.publishListeners {
 			l <- confirm
 		}
+
+		return &amqp.DeferredConfirmation{DeliveryTag: confirm.deliveryTag}, nil
 	}
 
-	return nil
+	return nil, nil
 }
 
 // Consume starts a fake consumer of queue
