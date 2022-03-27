@@ -345,6 +345,7 @@ func (ch *Channel) Close() error {
 		}
 		ch.publishListeners = []chan wabbit.Confirmation{}
 		ch.isConnected = false
+		ch.errSpread.Write(nil)
 	}
 
 	return nil
