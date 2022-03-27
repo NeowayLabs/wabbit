@@ -163,6 +163,7 @@ func (conn *Conn) Close() error {
 
 	// enables AutoRedial to gracefully shutdown
 	// This isn't wabbit stuff. It's the rabbitmq/amqp way of notify the shutdown
+	conn.errSpread.Write(nil)
 	if !conn.hasAutoRedial {
 		conn.errSpread.Delete(conn.errChan)
 		close(conn.errChan)
