@@ -3,9 +3,10 @@ package amqp
 import (
 	"errors"
 
-	"github.com/NeowayLabs/wabbit"
-	"github.com/NeowayLabs/wabbit/utils"
 	amqp "github.com/rabbitmq/amqp091-go"
+
+	"github.com/mesbahtanvir/wabbit"
+	"github.com/mesbahtanvir/wabbit/utils"
 )
 
 // Channel is a wrapper channel structure for amqp.Channel

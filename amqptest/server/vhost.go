@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/NeowayLabs/wabbit"
+	"github.com/mesbahtanvir/wabbit"
 )
 
 // VHost is a fake AMQP virtual host

@@ -1,6 +1,6 @@
 package amqptest
 
-import "github.com/NeowayLabs/wabbit"
+import "github.com/mesbahtanvir/wabbit"
 
 type Publisher struct {
 	channel wabbit.Publisher

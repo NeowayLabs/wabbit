@@ -2,9 +2,10 @@ package main
 
 import (
 	"flag"
-	"github.com/NeowayLabs/wabbit"
-	"github.com/NeowayLabs/wabbit/amqp"
 	"log"
+
+	"github.com/mesbahtanvir/wabbit"
+	"github.com/mesbahtanvir/wabbit/amqp"
 )
 
 var (

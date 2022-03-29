@@ -3,7 +3,7 @@ package server
 import (
 	"time"
 
-	"github.com/NeowayLabs/wabbit"
+	"github.com/mesbahtanvir/wabbit"
 )
 
 type (

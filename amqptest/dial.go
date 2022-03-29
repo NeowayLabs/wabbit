@@ -4,10 +4,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/NeowayLabs/wabbit"
-	"github.com/NeowayLabs/wabbit/amqptest/server"
-	"github.com/NeowayLabs/wabbit/utils"
 	"github.com/pborman/uuid"
+
+	"github.com/mesbahtanvir/wabbit"
+	"github.com/mesbahtanvir/wabbit/amqptest/server"
+	"github.com/mesbahtanvir/wabbit/utils"
 )
 
 const (

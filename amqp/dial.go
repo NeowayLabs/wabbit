@@ -4,9 +4,10 @@ import (
 	"crypto/tls"
 	"time"
 
-	"github.com/NeowayLabs/wabbit"
-	"github.com/NeowayLabs/wabbit/utils"
 	amqp "github.com/rabbitmq/amqp091-go"
+
+	"github.com/mesbahtanvir/wabbit"
+	"github.com/mesbahtanvir/wabbit/utils"
 )
 
 // Conn is the amqp connection
