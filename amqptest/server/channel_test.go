@@ -3,6 +3,8 @@ package server
 import (
 	"testing"
 	"time"
+
+	"github.com/rabbitmq/amqp091-go"
 )
 
 func TestBasicConsumer(t *testing.T) {
@@ -42,7 +44,7 @@ func TestBasicConsumer(t *testing.T) {
 		return
 	}
 
-	err = ch.Publish("neoway", "process.data", []byte("teste"), nil)
+	err = ch.Publish("neoway", "process.data", false, false, amqp091.Publishing{Body: []byte("teste")})
 
 	if err != nil {
 		t.Error(err)
@@ -53,6 +55,18 @@ func TestBasicConsumer(t *testing.T) {
 
 	if string(data.Body()) != "teste" {
 		t.Errorf("Failed to publish message to specified route")
+		return
+	}
+
+	if ch.IsClosed() {
+		t.Error("Expected a valid Channel to return false before closing")
+		return
+	}
+
+	// Closing a channel should make IsClosed return true
+	ch.Close()
+	if !ch.IsClosed() {
+		t.Error("Expected Channel to return true after closing")
 		return
 	}
 }
@@ -80,7 +94,7 @@ func TestWorkerQueue(t *testing.T) {
 		return
 	}
 
-	err = ch.Publish("", q.Name(), []byte("teste"), nil)
+	err = ch.Publish("", q.Name(), false, false, amqp091.Publishing{Body: []byte("teste")})
 
 	if err != nil {
 		t.Error(err)
@@ -132,7 +146,7 @@ func TestUnackedMessagesArentLost(t *testing.T) {
 		return
 	}
 
-	err = ch.Publish("neoway", "process.data", []byte("teste"), nil)
+	err = ch.Publish("neoway", "process.data", false, false, amqp091.Publishing{Body: []byte("teste")})
 
 	if err != nil {
 		t.Error(err)
@@ -250,7 +264,7 @@ func TestAckedMessagesAreCommited(t *testing.T) {
 		return
 	}
 
-	err = ch.Publish("neoway", "process.data", []byte("teste"), nil)
+	err = ch.Publish("neoway", "process.data", false, false, amqp091.Publishing{Body: []byte("teste")})
 
 	if err != nil {
 		t.Error(err)
@@ -355,7 +369,7 @@ func TestPublishThenConsumeAck(t *testing.T) {
 		return
 	}
 
-	err = ch.Publish("neoway", "process.data", []byte("teste"), nil)
+	err = ch.Publish("neoway", "process.data", false, false, amqp091.Publishing{Body: []byte("teste")})
 
 	if err != nil {
 		t.Error(err)
@@ -453,7 +467,7 @@ func TestNAckedMessagesAreRequeued(t *testing.T) {
 		return
 	}
 
-	err = ch.Publish("neoway", "process.data", []byte("teste"), nil)
+	err = ch.Publish("neoway", "process.data", false, false, amqp091.Publishing{Body: []byte("teste")})
 
 	if err != nil {
 		t.Error(err)
@@ -572,7 +586,7 @@ func TestNAckedMessagesAreRejectedWhenRequested(t *testing.T) {
 		return
 	}
 
-	err = ch.Publish("neoway", "process.data", []byte("teste"), nil)
+	err = ch.Publish("neoway", "process.data", false, false, amqp091.Publishing{Body: []byte("teste")})
 
 	if err != nil {
 		t.Error(err)
@@ -689,7 +703,7 @@ func TestRejectedMessagesAreRequeuedWhenRequested(t *testing.T) {
 		return
 	}
 
-	err = ch.Publish("neoway", "process.data", []byte("teste"), nil)
+	err = ch.Publish("neoway", "process.data", false, false, amqp091.Publishing{Body: []byte("teste")})
 
 	if err != nil {
 		t.Error(err)
@@ -808,7 +822,7 @@ func TestRejectedMessagesAreRejectedWhenRequested(t *testing.T) {
 		return
 	}
 
-	err = ch.Publish("neoway", "process.data", []byte("teste"), nil)
+	err = ch.Publish("neoway", "process.data", false, false, amqp091.Publishing{Body: []byte("teste")})
 
 	if err != nil {
 		t.Error(err)

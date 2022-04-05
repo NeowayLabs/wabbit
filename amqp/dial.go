@@ -30,7 +30,7 @@ func doDial(conn *Conn, dialFn func() error) (*Conn, error) {
 }
 
 // Dial connects to an AMQP broker, with defaults
-func Dial(uri string) (*Conn, error) {
+func Dial(uri string) (wabbit.Conn, error) {
 	conn := &Conn{}
 
 	return doDial(conn, func() error {
@@ -158,4 +158,8 @@ func (conn *Conn) Channel() (wabbit.Channel, error) {
 	}
 
 	return &Channel{ch}, nil
+}
+
+func (conn *Conn) IsClosed() bool {
+	return conn.Connection == nil || conn.Connection.IsClosed()
 }

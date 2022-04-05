@@ -8,6 +8,7 @@ import (
 	"github.com/NeowayLabs/wabbit"
 	"github.com/NeowayLabs/wabbit/amqptest"
 	"github.com/NeowayLabs/wabbit/amqptest/server"
+	"github.com/rabbitmq/amqp091-go"
 )
 
 func TestBasicUsage(t *testing.T) {
@@ -101,7 +102,7 @@ func pub(conn wabbit.Conn, t *testing.T, done chan bool) {
 		goto PubError
 	}
 
-	err = publisher.Publish("test", "wabbit-test-route", []byte("msg1"), nil)
+	err = publisher.Publish("test", "wabbit-test-route", false, false, amqp091.Publishing{Body: []byte("msg1")})
 
 	if err != nil {
 		goto PubError
@@ -113,7 +114,7 @@ func pub(conn wabbit.Conn, t *testing.T, done chan bool) {
 		goto PubError
 	}
 
-	err = publisher.Publish("test", "wabbit-test-route", []byte("msg2"), nil)
+	err = publisher.Publish("test", "wabbit-test-route", false, false, amqp091.Publishing{Body: []byte("msg2")})
 
 	if err != nil {
 		goto PubError
@@ -125,7 +126,7 @@ func pub(conn wabbit.Conn, t *testing.T, done chan bool) {
 		goto PubError
 	}
 
-	err = publisher.Publish("test", "wabbit-test-route", []byte("msg3"), nil)
+	err = publisher.Publish("test", "wabbit-test-route", false, false, amqp091.Publishing{Body: []byte("msg3")})
 
 	if err != nil {
 		goto PubError
